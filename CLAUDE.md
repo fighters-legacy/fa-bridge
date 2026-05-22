@@ -33,7 +33,9 @@ cmake --preset debug-msvc && cmake --build --preset debug-msvc   # Windows
 
 - Conventional Commits with scopes: `bridge`, `assets`, `build`, `ci`, `docs`
 - DCO sign-off required: `git commit -s`
+<!-- REUSE-IgnoreStart -->
 - SPDX identifier required on all new source files: `// SPDX-License-Identifier: GPL-3.0-or-later`
+<!-- REUSE-IgnoreEnd -->
 - All code must compile on Windows (MSVC), Linux (GCC/Clang), and macOS (AppleClang)
 
 ## Key files
