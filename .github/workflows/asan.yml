@@ -1,10 +1,10 @@
 name: Sanitizers
 
+# Manual-only until there is code to sanitize: with zero build targets and
+# zero tests this workflow was green vacuously. The push/pull_request
+# triggers are restored by the Phase 1 skeleton PR (see docs/roadmap.md).
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

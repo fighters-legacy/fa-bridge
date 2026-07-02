@@ -59,6 +59,5 @@ jobs:
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
 
-      - name: Test
-        run: ctest --preset ${{ matrix.preset }} --output-on-failure
-        continue-on-error: true
+      # The ctest step returns with the Phase 1 skeleton PR, without
+      # continue-on-error and with --no-tests=error (see docs/roadmap.md).
