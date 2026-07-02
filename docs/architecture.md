@@ -1,55 +1,117 @@
-# Architecture Overview
+# Architecture (planned)
 
-fa-content is a bridge plugin that implements the `IContentPack` interface from [fighters-legacy](https://github.com/jomkz/fighters-legacy). It translates Jane's Fighters Anthology (1998) asset formats into the engine's runtime types using the FA format parsers in [fx_lib](https://github.com/jomkz/fighters-codex).
+fa-bridge is a native bridge plugin implementing the `IContentPack` interface from
+[fighters-legacy](https://github.com/fighters-legacy/fighters-legacy). It transcodes
+Jane's Fighters Anthology (1998) asset formats into the engine's canonical open formats
+using the FA parsers in [fx_lib](https://github.com/jomkz/fighters-codex).
 
-The engine has no knowledge of FA, this repository, or any specific game. All it knows is `IContentPack`.
+The engine has no knowledge of FA, this repository, or any specific game. All it knows is
+`IContentPack`.
+
+**Status:** this document describes the *planned* architecture. The modules below land
+per [roadmap.md](roadmap.md); none exist yet.
 
 ---
 
 ## Data flow
 
 ```
-FA Install (user-supplied, *.LIB / *.PIC / *.PAL / *.FLT / ...)
+FA Install (user-supplied, *.LIB / *.PIC / *.PAL / *.SH / *.PT / ...)
     │
     ▼
-extern/fx_lib   (fighters-codex submodule — FA format parsers)
-    │  parse / decode raw FA binary formats
+extern/fx_lib    (fighters-codex submodule — FA format parsers)
+    │  decode raw FA binary formats → fx structs (RGBA8, ShMesh, BRF fields, PCM, ...)
     ▼
-bridge/         (IContentPack implementation)
-    │  loadMesh(), loadTexture(), loadAudio(), loadMission(), ...
+transcode/       (canonical-format writers)
+    │  RGBA8→PNG · ShMesh→glTF .glb · PCM→OGG Vorbis · PT/OT→TOML · mission→YAML
     ▼
-Engine AssetManager   (fighters-legacy)
+bridge/          (IContentPack implementation)
+    │  load*() returns raw bytes in the canonical format
+    ▼
+Engine AssetValidator → AssetManager   (fighters-legacy)
     │
     ▼
 Game runtime
 ```
 
+The critical contract: the engine's asset structs are `{name, bytes}` and its
+`AssetValidator` enforces canonical formats by magic/content — glTF `.glb` for meshes,
+PNG/KTX2 for textures, `OggS` for audio, TOML text for flight models and entity defs,
+YAML text for missions, Lua *source* for AI (bytecode is rejected). **Every `load*()` is
+a transcode, not a pass-through**; raw FA bytes returned to the engine are discarded and
+logged.
+
 ---
 
-## Key modules
+## Plugin mechanics
+
+- The plugin ships as a native shared library named for the manifest `id`:
+  `libfa-bridge.so` (Linux), `fa-bridge.dll` (Windows), `libfa-bridge.dylib` (macOS),
+  installed beside `manifest.toml` in `mods/fa-bridge/`.
+- The engine's `ModLoader` resolves one C symbol:
+  `extern "C" fl::IContentPack* fighters_legacy_create_pack();`
+  (exported with `__declspec(dllexport)` under MSVC).
+- `manifest.toml` declares `name`, `id`, `version`, `engine-api = "1.x"` (major checked),
+  and `priority` — set **above 50** so FA content overrides the engine's free
+  fl-base-pack in the priority stack.
+- First run: `init()` returns `NeedsConfiguration` when no FA install is known;
+  the engine then calls `configure(window)`, which hosts the "locate your FA
+  installation" flow and persists `FA_INSTALL_DIR`.
+- As a native, unsigned plugin the engine surfaces consent prompts
+  (`onNativeCodePackLoaded`, `onUntrustedPackLoaded`) — expected behaviour.
+- **ABI discipline:** `std::optional`/`std::string`/`std::vector` cross the plugin
+  boundary. Build with the same toolchain family and CRT configuration as the engine
+  (MSVC: matching `/MD` and iterator-debug-level; Linux: libstdc++ vs libc++).
+
+---
+
+## Key modules (planned)
 
 ### `bridge/`
 
 Implements `IContentPack`. Each `load*()` method:
-1. Locates the relevant file(s) in `FA_INSTALL_DIR`
+1. Locates the relevant file(s) in the mounted FA install (case-insensitive lookup —
+   FA installs vary in filename case and Linux filesystems are case-sensitive)
 2. Calls the appropriate fx_lib parser to decode the FA binary format
-3. Returns the result as the engine's platform-independent asset type
+3. Hands the decoded data to `transcode/` and returns canonical-format bytes
 
-A translation cache sits between fx_lib and the engine — decoded assets are cached on first load so repeated requests (e.g. a texture used by many models) don't re-parse the source file each time.
+A translation cache sits between transcode and the engine — converted assets are cached
+on first load so repeated requests (e.g. a texture used by many models) don't re-parse
+and re-encode the source each time.
 
-### `assets/`
+### `transcode/`
 
-Asset translation pipeline for more complex conversions: mesh format normalisation, palette expansion for indexed PIC textures, audio resampling. Used internally by `bridge/` where a single fx_lib call is not sufficient.
+The canonical-format write side this repository uniquely owns: ShMesh→glb (feet→metres),
+RGBA8→PNG, PCM→Vorbis, BRF field mapping→TOML. Dependency choices are recorded in
+[roadmap.md](roadmap.md). Named `transcode/`, not `assets/` — a directory called
+"assets" in a repository whose hardest rule is *never commit assets* is an accident
+waiting to happen.
 
 ### `extern/fx_lib`
 
-Git submodule from [fighters-codex](https://github.com/jomkz/fighters-codex). Provides low-level parsers for FA binary formats. The bridge layer calls fx_lib; fa-content does not duplicate parser logic.
+Git submodule from [fighters-codex](https://github.com/jomkz/fighters-codex), pinned to
+a release tag. Provides the FA format parsers; the bridge never duplicates parser logic.
+What each parser can deliver today is tracked in
+[asset-support-matrix.md](asset-support-matrix.md).
+
+### `extern/fl-headers` (Phase 1)
+
+Verbatim copies of the engine's three interface headers (`IContentPack.h`,
+`AssetTypes.h`, `TrustLevel.h` — a closed, std-only set) with a `PIN.md` recording the
+engine tag/SHA and update procedure. Vendored because the engine exports no CMake
+package; the headers carry a GPL linking exception.
 
 ---
 
 ## Design constraints
 
-- **One-way bridge.** The engine calls `IContentPack`; it never links against this repo or fx_lib directly. The dependency arrow points inward only.
-- **No FA assets in the repo.** All FA content is sourced at runtime from the user-supplied FA installation. The `.gitignore` blocks all FA file extensions.
-- **fx_lib is a submodule, not vendored.** Updates to the FA format parsers in fighters-codex are picked up by updating the submodule pointer — no duplication.
-- **`FA_INSTALL_DIR` is required at runtime, not build time.** The bridge builds without an FA installation present; tests that need real FA data are skipped when `FA_INSTALL_DIR` is unset.
+- **One-way bridge.** The engine calls `IContentPack`; it never links against this repo
+  or fx_lib directly. The dependency arrow points inward only.
+- **No FA assets in the repo.** All FA content is sourced at runtime from the
+  user-supplied FA installation. The `.gitignore` blocks the FA extension set (both
+  cases); FA files with generic extensions (`.TXT`, `.BIN`, `.DAT`, `.CFG`) are caught in
+  review.
+- **fx_lib is a submodule, not vendored.** Updates are picked up by bumping the submodule
+  pointer to the next codex release — no duplication.
+- **`FA_INSTALL_DIR` is required at runtime, not build time.** The bridge builds without
+  an FA installation present; tests that need real FA data are skipped when it is unset.

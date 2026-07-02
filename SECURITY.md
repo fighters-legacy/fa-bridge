@@ -23,11 +23,20 @@ Email `fighters-legacy@mkz.io` with:
 
 ## Scope
 
-In scope for this repository:
-- Buffer overflows or memory corruption in FA format parsers (`*.LIB`, `*.PIC`, `*.PAL`, `*.FLT`, `*.SHP`)
-- Path traversal or arbitrary file access via asset loading
-- Remote code execution via crafted asset files
+This repository will ship a **native engine plugin that parses untrusted binary input**
+(FA asset files); malformed-input handling is squarely in scope. In scope once code
+exists (roadmap Phase 1 onward):
+
+- Memory corruption in the bridge or transcode layers when fed malformed FA files
+  (`*.LIB`, `*.PIC`, `*.PAL`, `*.SH`, `*.PT`, `*.T2`, …)
+- Path traversal or arbitrary file access via asset loading or the FA-install mount layer
+- Anything that undermines the engine's plugin trust surface (manifest trust levels, the
+  native-code consent flow)
 
 Out of scope:
-- Vulnerabilities in fighter-legacy engine core (report to the fighters-legacy repo)
+- Vulnerabilities in the `fx_lib` parsers themselves — report to
+  [fighters-codex](https://github.com/jomkz/fighters-codex/security) (this repo bumps the
+  submodule pin when the fix lands)
+- Vulnerabilities in the fighters-legacy engine core — report to the
+  [fighters-legacy repo](https://github.com/fighters-legacy/fighters-legacy/security)
 - Issues requiring possession of a modified or pirated FA installation

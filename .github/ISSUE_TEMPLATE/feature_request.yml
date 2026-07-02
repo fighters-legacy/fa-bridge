@@ -8,7 +8,7 @@ body:
       label: Component
       options:
         - bridge
-        - assets
+        - transcode
         - build system
         - new component / unsure
     validations:

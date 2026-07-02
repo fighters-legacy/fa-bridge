@@ -1,34 +1,60 @@
-# fa-content — FA Bridge Plugin
+# fa-bridge — FA Bridge Plugin
 
-FA Bridge Plugin for [fighters-legacy](https://github.com/jomkz/fighters-legacy). Implements the `IContentPack` interface using [fx_lib](https://github.com/jomkz/fighters-codex) to translate Jane's Fighters Anthology (1998) asset formats into the engine's runtime types.
+FA Bridge Plugin for [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy).
+Implements the engine's `IContentPack` interface, using
+[fx_lib](https://github.com/jomkz/fighters-codex) to transcode Jane's Fighters
+Anthology (1998) asset formats into the engine's canonical open formats.
 
 ## What this is
 
-fighters-legacy is a clean-room GPL v3 reimplementation of the combat flight simulator engine. It has no knowledge of FA-specific formats — all content enters through `IContentPack`. This repository is one implementation of that interface that bridges a user-supplied FA installation to the engine.
+fighters-legacy is a clean-room GPL v3 reimplementation of the combat flight simulator
+engine. It has no knowledge of FA-specific formats — all content enters through
+`IContentPack` as raw bytes in canonical formats (glTF, PNG, OGG Vorbis, TOML, YAML).
+This repository is one implementation of that interface: a **bridge**, not a content
+pack. It ships no assets of its own — it transcodes content from the end-user's own FA
+installation into engine-compatible assets, cached locally before first use.
 
-**You must own a legitimate copy of Jane's Fighters Anthology to use this plugin.** No FA game assets are included or may be committed to this repository.
+**You must own a legitimate copy of Jane's Fighters Anthology to use this plugin.**
+No FA game assets are included or may be committed to this repository.
+
+## Status
+
+**Pre-implementation.** The repository configures on all three platforms but builds no
+targets yet; bridge code lands per the phase plan in [docs/roadmap.md](docs/roadmap.md).
+Which FA content is already fully understood and ready to bridge — aircraft flight
+models, entity stats, ~95% of 3D models, all 2D art, sound effects — is tracked in
+[docs/asset-support-matrix.md](docs/asset-support-matrix.md).
 
 ## Dependencies
 
 | Dependency | Source |
 |---|---|
-| fighters-legacy | Engine interface headers (`IContentPack.h`) |
-| fx_lib | `extern/fx_lib` submodule from [fighters-codex](https://github.com/jomkz/fighters-codex) |
+| fighters-legacy | Engine interface headers (`IContentPack.h`), vendored with a recorded pin (roadmap Phase 1) |
+| fx_lib | `extern/fx_lib` submodule from [fighters-codex](https://github.com/jomkz/fighters-codex), pinned to a release tag |
 
 ## Quick start
 
 ```bash
-git clone --recurse-submodules https://github.com/jomkz/fa-content.git
+git clone --recurse-submodules https://github.com/fighters-legacy/fa-bridge.git
 cmake --preset debug
 cmake --build --preset debug
 ```
 
-See [docs/development.md](docs/development.md) for full prerequisites and build instructions.
+Note: `fx_lib` does not compile on Linux/macOS until fighters-codex Phase 1 lands; the
+`FA_WITH_FX_LIB` CMake option therefore defaults OFF.
+
+See [docs/development.md](docs/development.md) for full prerequisites and build
+instructions.
 
 ## License
 
 GPL v3. See [LICENSE](LICENSE).
 
-Asset files (textures, audio, 3D models) will be licensed separately under CC-BY-SA 4.0 when a free base pack is included in a future phase. See `docs/content-license.md` when available.
+Final distribution positioning (free GPL plugin vs. the paid model sketched in early
+engine docs) is an open decision tracked in
+[#37](https://github.com/fighters-legacy/fa-bridge/issues/37) and
+[docs/roadmap.md](docs/roadmap.md).
 
-> **Never commit FA game assets** (*.LIB, *.PIC, *.PAL, *.FLT, *.SHP, *.VXA). They are owned by Electronic Arts and are not covered by this project's license.
+> **Never commit FA game assets** (`*.LIB`, `*.PIC`, `*.PAL`, `*.SH`, `*.PT`, `*.OT`,
+> `*.M`, `*.MM`, `*.T2`, `*.CB8`, and the rest of the extension set in `.gitignore`).
+> They are owned by Electronic Arts and are not covered by this project's license.

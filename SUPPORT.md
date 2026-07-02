@@ -3,14 +3,14 @@
 ## Getting help
 
 **GitHub Discussions** is the preferred place for questions, ideas, and general conversation:
-[github.com/jomkz/fa-content/discussions](https://github.com/jomkz/fa-content/discussions)
+[github.com/fighters-legacy/fa-bridge/discussions](https://github.com/fighters-legacy/fa-bridge/discussions)
 
 Categories to enable manually in GitHub settings:
 - **Announcements** — project news (maintainer only)
 - **General** — open-ended discussion
 - **Q&A** — questions with accepted answers
 - **Ideas** — feature requests and proposals
-- **Show & Tell** — share projects using fa-content
+- **Show & Tell** — share projects using fa-bridge
 
 **GitHub Issues** is for bugs and feature requests only — not support questions. Posting a support question as an issue may result in it being closed with a redirect to Discussions.
 
@@ -20,5 +20,5 @@ For private matters, compliance questions, or CoC concerns: `fighters-legacy@mkz
 
 ## Related resources
 
-- [fighters-legacy](https://github.com/jomkz/fighters-legacy) — the engine this plugin bridges to
+- [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy) — the engine this plugin bridges to
 - [fighters-codex](https://github.com/jomkz/fighters-codex) — fx_lib source (FA format parsers)

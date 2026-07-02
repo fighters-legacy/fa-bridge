@@ -1,4 +1,4 @@
-# Contributing to fa-content
+# Contributing to fa-bridge
 
 Thank you for contributing to the FA Bridge Plugin. This document covers the conventions and workflow for this repository.
 
@@ -38,9 +38,9 @@ Signed-off-by: Your Name <your@email>
 
 | Scope | Targets |
 |---|---|
-| `bridge` | `bridge/` — IContentPack implementation |
-| `assets` | `assets/` — asset translation pipeline |
-| `build` | `CMakeLists.txt`, `CMakePresets.json`, `cmake/` |
+| `bridge` | `bridge/` — IContentPack implementation (created in roadmap Phase 1) |
+| `transcode` | `transcode/` — canonical-format writers (created in roadmap Phase 3) |
+| `build` | `CMakeLists.txt`, `CMakePresets.json`, `extern/` pins |
 | `ci` | `.github/workflows/`, `.github/dependabot.yml` |
 | `docs` | `docs/`, `*.md` |
 
@@ -105,14 +105,14 @@ The DCO certifies that you have the right to contribute the code under the proje
 
 ## Code coverage
 
-New code added in PRs should aim for ≥70% test coverage. Codecov posts an automated comment on every PR showing the coverage delta for changed files. CI measures coverage automatically — you do not need to install anything.
+New code added in PRs should aim for ≥70% test coverage (applies once code exists — roadmap Phase 1 onward). Codecov posts an automated comment on every PR showing the coverage delta for changed files. CI measures coverage automatically — you do not need to install anything.
 
 ---
 
 ## First-time contributor guide
 
 1. Fork the repository on GitHub
-2. Clone your fork: `git clone --recurse-submodules https://github.com/<you>/fa-content.git`
+2. Clone your fork: `git clone --recurse-submodules git@github.com:<you>/fa-bridge.git`
 3. Create a branch: `git checkout -b feat/your-feature`
 4. Build and verify: see [docs/development.md](docs/development.md)
 5. Make your changes. Add tests where applicable.

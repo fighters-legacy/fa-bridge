@@ -2,9 +2,13 @@
   color: "0075ca"
   description: "IContentPack bridge implementation"
 
-- name: "component: assets"
+- name: "component: transcode"
   color: "0075ca"
-  description: "Asset translation pipeline"
+  description: "Canonical-format transcode layer"
+
+- name: "epic"
+  color: "3E4B9E"
+  description: "Phase-level epic — work items are sub-issues"
 
 - name: "component: build"
   color: "0075ca"
