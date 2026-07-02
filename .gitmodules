@@ -1,0 +1,4 @@
+[submodule "extern/fx_lib"]
+	path = extern/fx_lib
+	url = https://github.com/jomkz/fighters-codex.git
+	shallow = true

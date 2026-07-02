@@ -11,7 +11,16 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Pull in fx_lib from the fighters-codex submodule
-# add_subdirectory(extern/fx_lib)
+# fx_lib does not yet build on Linux/macOS; the default flips ON once
+# fighters-codex Phase 1 (cross-platform port) ships. See docs/roadmap.md.
+option(FA_WITH_FX_LIB "Build against fx_lib (requires fighters-codex Phase 1)" OFF)
 
-# Bridge source trees added here as Phase 1 Workstream B progresses
+if(FA_WITH_FX_LIB)
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/extern/fx_lib/lib/CMakeLists.txt)
+        message(FATAL_ERROR
+            "extern/fx_lib is missing. Run: git submodule update --init --recursive")
+    endif()
+    add_subdirectory(extern/fx_lib/lib)
+endif()
+
+# Bridge source trees are added here as the roadmap phases land (docs/roadmap.md)

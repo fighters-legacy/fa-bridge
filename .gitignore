@@ -32,10 +32,109 @@ CMakeUserPresets.json
 .DS_Store
 Thumbs.db
 
-# FA copyrighted game content — NEVER commit
+# FA copyrighted game content — NEVER commit.
+# Extension list cross-checked against fighters-codex docs/fa/formats/.
+# Both cases listed: gitignore patterns are case-sensitive on Linux, and FA
+# files copied from an install vary in case.
+# Archives
 *.LIB
+# (lowercase *.lib is already ignored above as an MSVC artifact)
+# Images and palettes
 *.PIC
+*.pic
 *.PAL
-*.FLT
-*.SHP
-*.VXA
+*.pal
+*.RAW
+*.raw
+# 3D models and terrain
+*.SH
+*.sh
+*.T2
+*.t2
+# Missions and maps
+*.M
+*.m
+*.MM
+*.mm
+# Type/stat records (BRF DSL)
+*.PT
+*.pt
+*.OT
+*.ot
+*.NT
+*.nt
+*.JT
+*.jt
+*.SEE
+*.see
+*.ECM
+*.ecm
+*.GAS
+*.gas
+*.BRF
+*.brf
+# Audio
+*.11K
+*.11k
+*.8K
+*.8k
+*.5K
+*.5k
+*.22K
+*.22k
+*.XMI
+*.xmi
+*.MUS
+*.mus
+# Video and cutscenes
+*.CB8
+*.cb8
+*.SEQ
+*.seq
+*.VDO
+*.vdo
+*.FBC
+*.fbc
+# Campaign and briefings
+*.CAM
+*.cam
+*.MC
+*.mc
+*.MT
+*.mt
+# UI, fonts, and overlays
+*.INF
+*.inf
+*.LAY
+*.lay
+*.HUD
+*.hud
+*.FNT
+*.fnt
+*.DLG
+*.dlg
+*.MNU
+*.mnu
+*.PTS
+*.pts
+*.HGR
+*.hgr
+# Pilots, AI, and symbols
+*.P
+*.p
+*.PLT
+*.plt
+*.AI
+*.ai
+*.BI
+*.bi
+*.SMS
+*.sms
+# Installer
+*.SSF
+*.ssf
+*.RGN
+*.rgn
+# FA also ships files with generic extensions (.TXT, .BIN, .DAT, .CFG) that
+# cannot be safely blanket-ignored (e.g. CMakeLists.txt). Never commit those
+# either — reviewers must catch them.
