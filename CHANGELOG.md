@@ -7,6 +7,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- `.github/workflows/add-to-project.yml` — auto-adds newly opened (or reopened)
+  issues and pull requests to the org-wide
+  [Fighters Ecosystem project board](https://github.com/orgs/fighters-legacy/projects/3)
+  via `actions/add-to-project`; uses `pull_request_target` so fork PRs can read
+  the `ADD_TO_PROJECT_PAT` org secret without checking out untrusted code
+
 ## [0.1.0] - 2026-07-02
 
 Built against fighters-codex v0.3.0 (`extern/fx_lib`).
