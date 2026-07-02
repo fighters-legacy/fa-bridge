@@ -55,13 +55,13 @@ FA install — an early Phase 3 deliverable.
 | `.PT` flight models | `fx/ot.h`, `fx/brf.h` | Ready — named fields, round-trip proven | FlightModel | TOML | Field mapping + TOML emit | **Ready** | — |
 | `.OT`/`.NT`/`.JT`/`.SEE`/`.ECM`/`.GAS` type records | `fx/ot.h`, `fx/brf.h` | Ready — named fields, round-trip proven | EntityDef | TOML | Field mapping + TOML emit | **Ready** | — |
 | `.11K`/`.8K`/`.5K`/`.22K` PCM audio | `fx/audio.h` | Ready — WAV/PCM, round-trip tested | Audio | OGG Vorbis | PCM → Vorbis encode | **Ready** | — |
-| `.M`/`.MM` missions & maps | `fx/mission.h` | Partial — summary info + byte-identical round-trip of all 592 stock missions; **no per-object list** | Mission | YAML | Listing/metadata now; full conversion blocked | **Partial** | fighters-codex object-list extraction (issue pending, P0); engine mission runtime (engine Phase 4) |
-| `.T2` terrain | `fx/t2.h` | Grid metadata only — no heightmaps or tile geometry | Terrain | Heightmap PNG chunks | Blocked | **Blocked (fighters-codex)** | Heightmap extraction (issue pending, P0) |
+| `.M`/`.MM` missions & maps | `fx/mission.h` | Partial — summary info + byte-identical round-trip of all 592 stock missions; **no per-object list** | Mission | YAML | Listing/metadata now; full conversion blocked | **Partial** | Object-list extraction ([codex#156](https://github.com/jomkz/fighters-codex/issues/156)); engine mission runtime ([engine#632](https://github.com/fighters-legacy/fighters-legacy/issues/632)) |
+| `.T2` terrain | `fx/t2.h` | Grid metadata only — no heightmaps or tile geometry | Terrain | Heightmap PNG chunks | Blocked | **Blocked (fighters-codex)** | Heightmap read API ([codex#158](https://github.com/jomkz/fighters-codex/issues/158)) |
 | `.SEQ` cutscene timelines | `fx/seq.h` | Ready — round-trip tested | — | — | — | **No engine target** | Engine cutscene subsystem |
 | `.CB8` FMV video | `fx/cb8.h` | Ready — frame decode (CLI-proven) | — | — | — | **No engine target** | Engine video subsystem |
 | `.PLT`/`.P` pilot saves | `fx/plt.h` | Ready — identity/campaign/stats, tested | — | — | — | **No engine target** | No engine consumer |
 | `.FNT`/`.HUD`/`.INF`/`.LAY` overlays | `fx/fnt.h` etc. | Partial — parse/dump, untested | — (engine UI is native) | — | — | **Blocked (fighters-codex)** / no engine target | Upstream test coverage |
-| `.XMI`/`.MUS` music | — | Missing — XMI docs-only; MUS is CLI-only, not in fx_lib | Audio | OGG Vorbis | — | **Blocked (fighters-codex)** | MUS lib-ification + XMI codec (issue pending, P0) |
+| `.XMI`/`.MUS` music | — | Missing — XMI docs-only; MUS is CLI-only, not in fx_lib | Audio | OGG Vorbis | — | **Blocked (fighters-codex)** | MUS lib-ification ([codex#157](https://github.com/jomkz/fighters-codex/issues/157)) + XMI codec ([codex#106](https://github.com/jomkz/fighters-codex/issues/106)) |
 | `.VDO`/`.FBC` briefing video | — | Missing — docs-only; the codex "long pole" | — | — | — | **Blocked (fighters-codex)** | [#55](https://github.com/jomkz/fighters-codex/issues/55) |
 | `.CAM`/`.MC`/`.MT` campaign & briefings | — | Missing — docs-only | `loadConfig` at most | — | — | **Blocked (fighters-codex)** | Codec coverage ([#49](https://github.com/jomkz/fighters-codex/issues/49)) |
 | `.DLG`/`.MNU`/`.PTS`/`.HGR` UI layouts | — | Missing — docs-only | — (engine UI is native) | — | — | **Blocked (fighters-codex)** / no engine target | Codec coverage ([#49](https://github.com/jomkz/fighters-codex/issues/49)) |
@@ -82,7 +82,7 @@ FA install — an early Phase 3 deliverable.
   bridge with stats but placeholder geometry.
 - **`.LIB` compression coverage:** fx_lib auto-decompresses DCL-compressed
   and raw entries; rare LZSS/PXPK entries are returned still compressed
-  (upstream issue pending, P0).
+  ([codex#159](https://github.com/jomkz/fighters-codex/issues/159)).
 - **Audio sample rates:** extension encodes the rate; `.22K` → 22050 Hz was
   fixed upstream in fighters-codex #100 (included in v0.3.0).
 - **Case sensitivity:** FA installs vary in filename case; the Phase 2
@@ -93,5 +93,4 @@ FA install — an early Phase 3 deliverable.
 
 Docs-currency rule: this matrix is updated **in the same PR** as any change
 that shifts a row — a new transcoder, an `extern/fx_lib` bump, or an engine
-pipeline landing. "Issue pending (P0)" placeholders are replaced with live
-issue links as the Program Reset files them.
+pipeline landing.
