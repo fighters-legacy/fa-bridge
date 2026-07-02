@@ -3,14 +3,14 @@
 ## Getting help
 
 **GitHub Discussions** is the preferred place for questions, ideas, and general conversation:
-[github.com/fighters-legacy/fa-content/discussions](https://github.com/fighters-legacy/fa-content/discussions)
+[github.com/fighters-legacy/fa-bridge/discussions](https://github.com/fighters-legacy/fa-bridge/discussions)
 
 Categories to enable manually in GitHub settings:
 - **Announcements** — project news (maintainer only)
 - **General** — open-ended discussion
 - **Q&A** — questions with accepted answers
 - **Ideas** — feature requests and proposals
-- **Show & Tell** — share projects using fa-content
+- **Show & Tell** — share projects using fa-bridge
 
 **GitHub Issues** is for bugs and feature requests only — not support questions. Posting a support question as an issue may result in it being closed with a redirect to Discussions.
 

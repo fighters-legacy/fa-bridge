@@ -1,4 +1,4 @@
-# Contributing to fa-content
+# Contributing to fa-bridge
 
 Thank you for contributing to the FA Bridge Plugin. This document covers the conventions and workflow for this repository.
 
@@ -112,7 +112,7 @@ New code added in PRs should aim for ≥70% test coverage (applies once code exi
 ## First-time contributor guide
 
 1. Fork the repository on GitHub
-2. Clone your fork: `git clone --recurse-submodules git@github.com:<you>/fa-content.git`
+2. Clone your fork: `git clone --recurse-submodules git@github.com:<you>/fa-bridge.git`
 3. Create a branch: `git checkout -b feat/your-feature`
 4. Build and verify: see [docs/development.md](docs/development.md)
 5. Make your changes. Add tests where applicable.

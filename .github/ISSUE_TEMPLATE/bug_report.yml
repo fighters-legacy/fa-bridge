@@ -50,9 +50,9 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: fa-content version/commit, fighters-legacy version, FA install edition
+      description: fa-bridge version/commit, fighters-legacy version, FA install edition
       placeholder: |
-        fa-content: commit abc1234
+        fa-bridge: commit abc1234
         fighters-legacy: v0.x.x
         FA edition: Gold / Standard
         OS: Ubuntu 24.04 / Windows 11

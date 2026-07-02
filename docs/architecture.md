@@ -1,6 +1,6 @@
 # Architecture (planned)
 
-fa-content is a native bridge plugin implementing the `IContentPack` interface from
+fa-bridge is a native bridge plugin implementing the `IContentPack` interface from
 [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy). It transcodes
 Jane's Fighters Anthology (1998) asset formats into the engine's canonical open formats
 using the FA parsers in [fx_lib](https://github.com/jomkz/fighters-codex).
@@ -46,8 +46,8 @@ logged.
 ## Plugin mechanics
 
 - The plugin ships as a native shared library named for the manifest `id`:
-  `libfa-content.so` (Linux), `fa-content.dll` (Windows), `libfa-content.dylib` (macOS),
-  installed beside `manifest.toml` in `mods/fa-content/`.
+  `libfa-bridge.so` (Linux), `fa-bridge.dll` (Windows), `libfa-bridge.dylib` (macOS),
+  installed beside `manifest.toml` in `mods/fa-bridge/`.
 - The engine's `ModLoader` resolves one C symbol:
   `extern "C" fl::IContentPack* fighters_legacy_create_pack();`
   (exported with `__declspec(dllexport)` under MSVC).

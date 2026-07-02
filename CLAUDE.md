@@ -29,7 +29,7 @@ issues + native sub-issues = work breakdown. What can be bridged today lives in
   to a release tag. RE documentation lives *there*; implementations live *here*.
 - **License boundary:** codex is MIT (one-way consumption is fine); this repo is
   GPL-3.0-or-later. Final distribution positioning is an open owner decision
-  ([#37](https://github.com/fighters-legacy/fa-content/issues/37)).
+  ([#37](https://github.com/fighters-legacy/fa-bridge/issues/37)).
 
 ## Environments
 

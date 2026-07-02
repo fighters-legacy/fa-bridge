@@ -1,6 +1,6 @@
 # Governance
 
-fa-content follows the same governance model as [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy). This document summarises how it applies to this repository.
+fa-bridge follows the same governance model as [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy). This document summarises how it applies to this repository.
 
 ## Project Lead (BDFL)
 

@@ -34,8 +34,8 @@ For platform-specific fighters-legacy prerequisites (Vulkan SDK, SDL3, OpenAL So
 ## First-time setup
 
 ```bash
-git clone --recurse-submodules https://github.com/fighters-legacy/fa-content.git
-cd fa-content
+git clone --recurse-submodules https://github.com/fighters-legacy/fa-bridge.git
+cd fa-bridge
 ```
 
 If you already cloned without `--recurse-submodules`:

@@ -7,4 +7,4 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/fighters-legacy/fa-content/compare/HEAD...HEAD
+[Unreleased]: https://github.com/fighters-legacy/fa-bridge/compare/HEAD...HEAD

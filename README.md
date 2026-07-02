@@ -1,4 +1,4 @@
-# fa-content — FA Bridge Plugin
+# fa-bridge — FA Bridge Plugin
 
 FA Bridge Plugin for [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy).
 Implements the engine's `IContentPack` interface, using
@@ -10,8 +10,9 @@ Anthology (1998) asset formats into the engine's canonical open formats.
 fighters-legacy is a clean-room GPL v3 reimplementation of the combat flight simulator
 engine. It has no knowledge of FA-specific formats — all content enters through
 `IContentPack` as raw bytes in canonical formats (glTF, PNG, OGG Vorbis, TOML, YAML).
-This repository is one implementation of that interface: it bridges a user-supplied FA
-installation to the engine, transcoding each FA format on load.
+This repository is one implementation of that interface: a **bridge**, not a content
+pack. It ships no assets of its own — it transcodes content from the end-user's own FA
+installation into engine-compatible assets, cached locally before first use.
 
 **You must own a legitimate copy of Jane's Fighters Anthology to use this plugin.**
 No FA game assets are included or may be committed to this repository.
@@ -34,7 +35,7 @@ models, entity stats, ~95% of 3D models, all 2D art, sound effects — is tracke
 ## Quick start
 
 ```bash
-git clone --recurse-submodules https://github.com/fighters-legacy/fa-content.git
+git clone --recurse-submodules https://github.com/fighters-legacy/fa-bridge.git
 cmake --preset debug
 cmake --build --preset debug
 ```
@@ -51,7 +52,7 @@ GPL v3. See [LICENSE](LICENSE).
 
 Final distribution positioning (free GPL plugin vs. the paid model sketched in early
 engine docs) is an open decision tracked in
-[#37](https://github.com/fighters-legacy/fa-content/issues/37) and
+[#37](https://github.com/fighters-legacy/fa-bridge/issues/37) and
 [docs/roadmap.md](docs/roadmap.md).
 
 > **Never commit FA game assets** (`*.LIB`, `*.PIC`, `*.PAL`, `*.SH`, `*.PT`, `*.OT`,

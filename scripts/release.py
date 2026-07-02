@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CMAKE = ROOT / "CMakeLists.txt"
 CHANGELOG = ROOT / "CHANGELOG.md"
-REPO_URL = "https://github.com/fighters-legacy/fa-content"
+REPO_URL = "https://github.com/fighters-legacy/fa-bridge"
 FX_LIB = ROOT / "extern" / "fx_lib"
 
 
