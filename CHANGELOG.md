@@ -7,6 +7,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-02
+
+Built against fighters-codex v0.3.0 (`extern/fx_lib`).
+
 ### Added
 - `docs/roadmap.md` — charter, the 1.0 definition, seven constraint-gated phases
   (P0 Program Reset → P6 Full Coverage & 1.0) with external gates wired to live
@@ -47,4 +51,5 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   workflows are manual-only until the Phase 1 skeleton restores them with real
   tests; the release workflow extracts notes from CHANGELOG.md (#29)
 
-[Unreleased]: https://github.com/fighters-legacy/fa-bridge/compare/HEAD...HEAD
+[Unreleased]: https://github.com/fighters-legacy/fa-bridge/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/fighters-legacy/fa-bridge/releases/tag/v0.1.0
