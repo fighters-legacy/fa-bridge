@@ -21,7 +21,7 @@ body:
       label: Component
       options:
         - bridge
-        - assets
+        - transcode
         - build system
         - unsure
     validations:

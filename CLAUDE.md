@@ -1,46 +1,74 @@
 # FA Content Bridge — Claude Code Instructions
 
-## Project Overview
+## What this project is
 
-GPL v3. Implements `IContentPack` for [fighters-legacy](https://github.com/jomkz/fighters-legacy) using `fx_lib` from [fighters-codex](https://github.com/jomkz/fighters-codex). Translates Jane's Fighters Anthology (1998) asset formats into engine runtime types at load time.
+The FA bridge plugin for [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy):
+a native `IContentPack` implementation that **transcodes** Jane's Fighters Anthology (1998)
+assets from a user-supplied install into the engine's canonical open formats at load time.
+**The working plugin is the primary output.** Reverse-engineering knowledge is consumed
+from fighters-codex (docs + `fx_lib`), never produced here — format gaps become
+fighters-codex issues.
 
-Phase 1 Workstream B is active.
+The engine contract: content packs return **raw bytes in canonical formats** — glTF `.glb`
+(meshes), PNG/KTX2 (textures), OGG Vorbis (audio), TOML (flight models, entity defs), YAML
+(missions), Lua source (AI). The engine's `AssetValidator` rejects anything else, so every
+`load*()` is a transcode, not a pass-through.
 
-## Architecture
+Work is planned in [docs/roadmap.md](docs/roadmap.md): milestones = phases, `epic`-labeled
+issues + native sub-issues = work breakdown. What can be bridged today lives in
+[docs/asset-support-matrix.md](docs/asset-support-matrix.md). No standalone TODO files.
 
-```
-FA Install (user-supplied)
-    └── fx_lib (fighters-codex submodule)
-            └── IContentPack::load*() implementation (bridge/)
-                    └── Engine AssetManager
-```
+## Related repositories
 
-- `bridge/` — `IContentPack` implementation; all FA-format logic lives here
-- `assets/` — asset translation pipeline (texture, mesh, audio, mission data)
-- `extern/fx_lib` — git submodule from fighters-codex; provides FA format parsers
+- **[fighters-legacy/fighters-legacy](https://github.com/fighters-legacy/fighters-legacy)** —
+  the engine; owns `IContentPack`. Its three interface headers are vendored with a
+  recorded pin (roadmap Phase 1); the interface may gain pure virtuals, so bump the pin
+  deliberately, never casually.
+- **[jomkz/fighters-codex](https://github.com/jomkz/fighters-codex)** (MIT) — FA
+  reverse-engineering docs and `fx_lib`, consumed as the `extern/fx_lib` submodule pinned
+  to a release tag. RE documentation lives *there*; implementations live *here*.
+- **License boundary:** codex is MIT (one-way consumption is fine); this repo is
+  GPL-3.0-or-later. Final distribution positioning is an open owner decision
+  ([#37](https://github.com/fighters-legacy/fa-content/issues/37)).
 
-**Never commit FA game assets** (`*.LIB`, `*.PIC`, `*.PAL`, `*.FLT`, `*.SHP`, `*.VXA`).
+## Environments
 
-## Build
-
-```bash
-git submodule update --init --recursive   # pull fx_lib
-cmake --preset debug && cmake --build --preset debug   # Linux / macOS
-cmake --preset debug-msvc && cmake --build --preset debug-msvc   # Windows
-```
+- **Primary development: Fedora Linux.** `cmake --preset debug && cmake --build --preset debug`.
+- **fx_lib does not compile on Linux/macOS yet** (fighters-codex Phase 1); the
+  `FA_WITH_FX_LIB` CMake option defaults OFF until it does.
+- The licensed FA install lives on the fighters-codex **Windows bench**; runtime testing
+  here uses `FA_INSTALL_DIR` (required at runtime only, never at build time).
+- **Never commit FA game assets.** The `.gitignore` blocks the real FA extension set
+  (`*.LIB`, `*.PIC`, `*.PAL`, `*.SH`, `*.PT`, `*.OT`, `*.M`, `*.MM`, `*.T2`, `*.CB8`, …);
+  FA files with generic extensions (`.TXT`, `.BIN`, `.DAT`, `.CFG`) can't be
+  blanket-ignored and must be caught in review.
 
 ## Conventions
 
-- Conventional Commits with scopes: `bridge`, `assets`, `build`, `ci`, `docs`
-- DCO sign-off required: `git commit -s`
+- Conventional Commits with scopes per [CONTRIBUTING.md](CONTRIBUTING.md):
+  `bridge`, `transcode`, `build`, `ci`, `docs`. Branches `<type>/<kebab-description>`.
+- DCO sign-off required: `git commit -s`.
 <!-- REUSE-IgnoreStart -->
 - SPDX identifier required on all new source files: `// SPDX-License-Identifier: GPL-3.0-or-later`
 <!-- REUSE-IgnoreEnd -->
-- All code must compile on Windows (MSVC), Linux (GCC/Clang), and macOS (AppleClang)
+- C++20; all code must compile on Windows (MSVC), Linux (GCC/Clang), and macOS
+  (AppleClang). Plugin ABI: same toolchain family and CRT config as the engine.
+- Releases: `python3 scripts/draft-changelog.py` to draft, curate CHANGELOG.md, then
+  `python3 scripts/release.py X.Y.Z` and push with tags. The script refuses to release
+  unless `extern/fx_lib` is pinned to a codex release tag.
+
+## The docs-currency rule
+
+Every change that shifts what the bridge can do updates, **in the same PR**:
+[docs/asset-support-matrix.md](docs/asset-support-matrix.md) (the affected row) and the
+relevant reference doc. The truth-pass lesson: claims that aren't mechanically checked
+drift — don't add unchecked claims to README.
 
 ## Key files
 
-- `README.md` — project overview and quick start
-- `docs/development.md` — full build prerequisites and FA_INSTALL_DIR setup
-- `docs/architecture.md` — data flow from FA install through fx_lib to engine
+- `README.md` — project overview and status
+- `docs/roadmap.md` — phases, gates, and the 1.0 definition
+- `docs/asset-support-matrix.md` — what can be bridged today, and what blocks the rest
+- `docs/development.md` — build prerequisites and FA_INSTALL_DIR setup
+- `docs/architecture.md` — planned architecture: FA install → fx_lib → transcode → engine
 - `GOVERNANCE.md` — RFC process for IContentPack binding changes

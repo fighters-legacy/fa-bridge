@@ -1,6 +1,6 @@
 # Governance
 
-fa-content follows the same governance model as [fighters-legacy](https://github.com/jomkz/fighters-legacy). This document summarises how it applies to this repository.
+fa-content follows the same governance model as [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy). This document summarises how it applies to this repository.
 
 ## Project Lead (BDFL)
 
@@ -8,7 +8,7 @@ fa-content follows the same governance model as [fighters-legacy](https://github
 
 ## Committers
 
-Committer status is earned after 5+ quality merged PRs. Committers are initially scoped to the modules they contribute to (`bridge` or `assets`). Multi-module sustained contribution leads to global committer status. Twelve months of inactivity moves a committer to emeritus status.
+Committer status is earned after 5+ quality merged PRs. Committers are initially scoped to the modules they contribute to (`bridge` or `transcode`, once those modules exist — see [docs/roadmap.md](docs/roadmap.md)). Multi-module sustained contribution leads to global committer status. Twelve months of inactivity moves a committer to emeritus status.
 
 ## Decision making
 

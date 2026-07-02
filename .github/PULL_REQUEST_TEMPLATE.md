@@ -14,7 +14,7 @@ Closes #
 - [ ] SPDX identifier on all new source files (`// SPDX-License-Identifier: GPL-3.0-or-later`)
 <!-- REUSE-IgnoreEnd -->
 - [ ] Documentation updated if behaviour changed
-- [ ] No FA game assets or copyrighted content committed (`*.LIB`, `*.PIC`, `*.PAL`, `*.FLT`, `*.SHP`, `*.VXA`)
+- [ ] No FA game assets or copyrighted content committed (`*.LIB`, `*.PIC`, `*.PAL`, `*.SH`, `*.PT`, `*.OT`, `*.M`, `*.T2`, ... — full set in `.gitignore`; watch for FA files with generic `.TXT`/`.BIN`/`.DAT`/`.CFG` extensions)
 - [ ] Breaking changes documented with `BREAKING CHANGE:` footer
 
 ## Platform testing
