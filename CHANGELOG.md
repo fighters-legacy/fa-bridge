@@ -7,6 +7,10 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-02
+
+Built against fighters-codex v0.3.0 (`extern/fx_lib`).
+
 ### Fixed
 - The release workflow published releases with empty notes and a failing
   provenance step: #26's action-gh-release v3 bump had rewired the notes body
@@ -93,6 +97,7 @@ Built against fighters-codex v0.3.0 (`extern/fx_lib`).
   workflows are manual-only until the Phase 1 skeleton restores them with real
   tests; the release workflow extracts notes from CHANGELOG.md (#29)
 
-[Unreleased]: https://github.com/fighters-legacy/fa-bridge/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/fighters-legacy/fa-bridge/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/fighters-legacy/fa-bridge/releases/tag/v0.2.1
 [0.2.0]: https://github.com/fighters-legacy/fa-bridge/releases/tag/v0.2.0
 [0.1.0]: https://github.com/fighters-legacy/fa-bridge/releases/tag/v0.1.0
