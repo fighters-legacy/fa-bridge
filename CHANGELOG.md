@@ -7,6 +7,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- The release workflow published releases with empty notes and a failing
+  provenance step: #26's action-gh-release v3 bump had rewired the notes body
+  to a nonexistent git-cliff step and added a broken attestation step. Notes
+  wiring restored; attestation removed until artifact packaging lands (#51).
+  v0.2.0's published notes were repaired by hand (#50)
+
 ## [0.2.0] - 2026-07-02
 
 Built against fighters-codex v0.3.0 (`extern/fx_lib`).

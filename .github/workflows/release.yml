@@ -43,8 +43,8 @@ jobs:
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
 
-  # Artifact packaging and provenance attestation return when roadmap Phase 1
-  # produces plugin binaries (see docs/roadmap.md).
+  # Artifact packaging and provenance attestation are tracked in #51 (package
+  # the staged mod per platform and attest it).
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -72,12 +72,5 @@ jobs:
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
-        id: release
-        with:
-          body: ${{ steps.cliff.outputs.content }}
-          files: "**/*.zip"
-
-      - name: Attest build provenance
-        uses: actions/attest-build-provenance@v4
         with:
           body: ${{ steps.changelog.outputs.body }}
