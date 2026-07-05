@@ -35,6 +35,14 @@ sound effects — is tracked in
 | fighters-legacy | Engine interface headers (`IContentPack.h`), vendored at `extern/fl-headers`, pinned to engine v0.2.6 ([PIN.md](extern/fl-headers/PIN.md)) |
 | fx_lib | `extern/fx_lib` submodule from [fighters-codex](https://github.com/jomkz/fighters-codex), pinned to a release tag |
 
+The reverse-engineering documentation this bridge builds on lives in
+[fighters-codex](https://github.com/jomkz/fighters-codex) (the FA reconstruction). Two of its
+components are worth noting for the engine-side work: **fx_render** — a shared MIT render module
+(OpenGL + FA-faithful software backends), built engine-agnostic so the classic/parity render path can
+adopt it instead of a bespoke rasterizer — and **fxc**, a clean-room MIT *source port* of the game
+executable. fxc is an **independent sibling** that validates the same reconstruction; it is **not a
+dependency** of this bridge.
+
 ## Quick start
 
 ```bash
@@ -43,8 +51,9 @@ cmake --preset debug
 cmake --build --preset debug
 ```
 
-Note: `fx_lib` does not compile on Linux/macOS until fighters-codex Phase 1 lands; the
-`FA_WITH_FX_LIB` CMake option therefore defaults OFF.
+Note: `fx_lib` builds on Linux (fighters-codex Phase 1 has landed); macOS support is pending
+([fighters-codex#155](https://github.com/jomkz/fighters-codex/issues/155)). The `FA_WITH_FX_LIB`
+CMake option currently defaults OFF.
 
 See [docs/development.md](docs/development.md) for full prerequisites and build
 instructions.
