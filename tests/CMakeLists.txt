@@ -30,6 +30,11 @@ add_executable(fa_bridge_tests
     test_real_install.cpp
     test_translation_cache.cpp)
 target_link_libraries(fa_bridge_tests PRIVATE fa-bridge-core Catch2::Catch2WithMain)
+if(MSVC)
+    # std::getenv in the platform-paths and real-install tests trips C4996
+    # under /W4 + /WX, exactly as it does in fa-bridge-core.
+    target_compile_definitions(fa_bridge_tests PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
 catch_discover_tests(fa_bridge_tests)
 
 # Loads the built plugin exactly as the engine's ModLoader does. Deliberately a
