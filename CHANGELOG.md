@@ -30,7 +30,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `IContentPack` contract (`namespaceId()` = "fa", sensor/weapon/manual loaders,
   `resolveTilePath`) and vendors the `IWindow` platform header set for `configure()`
 - **readme** refresh fighters-codex relationship (fx_lib on Linux, fx_render, fxc) (#61)
-- **docs** asset support matrix refreshed against fx_lib v0.8.4 (music now in-lib, T2
+- **docs** asset support matrix refreshed against fx_lib v0.8.x (pin now v0.8.7) (music now in-lib, T2
   full band read/write, SH state/articulation, campaign/UI/video parsers) and the
   engine's v0.3.x asset-type split; README `fxc` misnomer corrected to `fxe`
 

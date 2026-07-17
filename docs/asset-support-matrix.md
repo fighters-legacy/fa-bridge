@@ -3,7 +3,7 @@
 The living answer to "which FA content can the bridge deliver to the engine,
 and what stands in the way of the rest." Cross-references what
 [fx_lib](https://github.com/jomkz/fighters-codex) can decode (pinned at
-`extern/fx_lib`, currently v0.8.4) against what the
+`extern/fx_lib`, currently v0.8.7) against what the
 [fighters-legacy](https://github.com/fighters-legacy/fighters-legacy) engine
 can consume, and names the transcoding work this repository uniquely owns.
 
@@ -47,7 +47,7 @@ FA install — an early Phase 3 deliverable.
 
 ## Matrix
 
-| FA format | fx_lib API | fx_lib status (v0.8.4) | Engine asset type | Canonical format | Bridge transcode | Verdict | Blocked by |
+| FA format | fx_lib API | fx_lib status (v0.8.7) | Engine asset type | Canonical format | Bridge transcode | Verdict | Blocked by |
 |---|---|---|---|---|---|---|---|
 | `.LIB` archives | `fx/ealib.h` | Ready — extract/build/patch, round-trip tested | (container) | — | **Done** — mounted read-only in-plugin VFS: case-insensitive, memory-mapped, all install libs, `hasAsset`/`listAssets` answer from it | **Ready** | — |
 | `.PIC` + `.PAL` images | `fx/pic.h`, `fx/pal.h` | Ready — all 3 sub-formats → RGBA8, tested | Texture | PNG (KTX2 later) | RGBA8 → PNG encode | **Ready** | — |
