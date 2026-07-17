@@ -193,7 +193,7 @@ The coverage workflow runs on every push and pull request. Locally:
 cmake --preset coverage
 cmake --build --preset coverage
 ctest --preset coverage --output-on-failure
-lcov --capture --directory . --output-file coverage.info
+lcov --capture --directory . --output-file coverage.info --exclude '*/_deps/*'
 lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' '*/_deps/*' \
      --output-file coverage.info
 ```

@@ -36,7 +36,11 @@ jobs:
 
       - name: Generate lcov report
         run: |
+          # --exclude at capture: FetchContent'd Catch2 gcda reference source
+          # paths that don't exist in the workspace, and geninfo hard-errors on
+          # them before any --remove filter could apply.
           lcov --capture --directory . --output-file coverage.info \
+               --exclude '*/_deps/*' \
                --ignore-errors empty
           lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' '*/_deps/*' \
                --output-file coverage.info --ignore-errors empty,unused

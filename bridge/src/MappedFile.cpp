@@ -57,7 +57,10 @@ std::optional<MappedFile> MappedFile::open(const std::filesystem::path& path) {
     if (fd < 0)
         return std::nullopt;
 
-    struct stat st{};
+    // "= {}" rather than "{}": clang-format versions disagree on brace-init
+    // after an elaborated type specifier, and the CI format check must pass on
+    // both the pinned local version and the runner's.
+    struct stat st = {};
     if (::fstat(fd, &st) != 0 || !S_ISREG(st.st_mode)) {
         ::close(fd);
         return std::nullopt;
