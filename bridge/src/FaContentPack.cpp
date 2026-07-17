@@ -6,6 +6,7 @@
 #include "FaAssetTypes.h"
 #include "FaBridgeVersion.h"
 #include "FaInstallLocator.h"
+#include "PlatformPaths.h"
 #include "platform/IWindow.h"
 
 #include <string>
@@ -52,6 +53,7 @@ FaContentPack::Status FaContentPack::init() {
     if (auto dir = FaInstallLocator::discover(BridgeConfig::defaultPath())) {
         if (m_vfs.mount(*dir)) {
             m_installDir = std::move(*dir);
+            m_cache = TranslationCache(cacheDir());
             return Status::Ready;
         }
     }
@@ -85,6 +87,7 @@ bool FaContentPack::configure(fl::IWindow* window) {
                                        ok, 1);
             }
             m_installDir = std::move(dir);
+            m_cache = TranslationCache(cacheDir());
             return true;
         }
 

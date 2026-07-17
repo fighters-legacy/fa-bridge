@@ -119,6 +119,11 @@ flow. Dev/test environment knobs (each overrides the default behaviour):
 | `FA_BRIDGE_CACHE_DIR` | overrides the cache directory |
 | `FA_BRIDGE_NO_PROBE` | skips the registry/drive probes |
 
+The translation cache lives under the cache directory
+(`fighters-legacy/fa-bridge/` beneath `$XDG_CACHE_HOME`/`~/.cache`,
+`%LOCALAPPDATA%`, or `~/Library/Caches`). It is self-invalidating against the
+source archives; delete the directory at any time to clear it.
+
 ---
 
 ## Runtime testing against a real FA installation (from Phase 2 onward)

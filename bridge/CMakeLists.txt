@@ -17,7 +17,8 @@ add_library(fa-bridge-core STATIC
     src/FaVfs.cpp
     src/LibArchive.cpp
     src/MappedFile.cpp
-    src/PlatformPaths.cpp)
+    src/PlatformPaths.cpp
+    src/TranslationCache.cpp)
 target_include_directories(fa-bridge-core PUBLIC src ${CMAKE_CURRENT_BINARY_DIR}/generated)
 # fx::lib is PUBLIC: the mount layer's headers expose fx::Entry, and the test
 # suite builds synthetic archives with fx::ealib_build.

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "FaVfs.h"
+#include "TranslationCache.h"
 #include "content/IContentPack.h"
 
 #include <filesystem>
@@ -55,6 +56,10 @@ class FaContentPack : public fl::IContentPack {
   private:
     std::filesystem::path m_installDir;
     FaVfs m_vfs;
+    // Constructed on successful mount; the Phase 3 loaders read through it via
+    // readWithCache(m_vfs, m_cache, ref). Disabled (no-op) when the platform
+    // cache dir is unavailable.
+    TranslationCache m_cache;
 };
 
 } // namespace fa

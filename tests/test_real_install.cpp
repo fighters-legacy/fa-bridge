@@ -7,7 +7,9 @@
 #include "FaAssetTypes.h"
 #include "FaContentPack.h"
 #include "FaVfs.h"
+#include "TempDir.h"
 #include "TestEnv.h"
+#include "TranslationCache.h"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -80,4 +82,30 @@ TEST_CASE("real install extracts a compressed entry", "[integration]") {
         break; // listStems already spans all libs; one pass suffices
     }
     CHECK(extractedOne);
+}
+
+TEST_CASE("real install warm extract hits the cache", "[integration]") {
+    const std::string install = realInstallOrEmpty();
+    if (install.empty())
+        SKIP("FA_INSTALL_DIR not set");
+
+    fa::FaVfs vfs;
+    REQUIRE(vfs.mount(install));
+    fatest::TempDir cacheRoot("real-cache");
+    fa::TranslationCache cache(cacheRoot.path());
+    REQUIRE(cache.enabled());
+
+    // First DCL-compressed entry through the cached path, twice.
+    for (const auto& stem : vfs.listStems(fa::extensionsFor(fl::AssetType::Texture))) {
+        const auto ref = vfs.findStem(stem, fa::extensionsFor(fl::AssetType::Texture));
+        if (!ref || ref->entry->flags != 4)
+            continue;
+        const auto cold = fa::readWithCache(vfs, cache, *ref);
+        REQUIRE_FALSE(cold.empty());
+        CHECK(std::filesystem::exists(cacheRoot.path() / "extract")); // materialized
+        const auto warm = fa::readWithCache(vfs, cache, *ref);
+        CHECK(warm == cold); // byte-identical through the hit path
+        return;
+    }
+    FAIL("no compressed texture entry found in the install");
 }

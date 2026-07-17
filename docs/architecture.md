@@ -91,9 +91,17 @@ nullopt and `init()` reports readiness from `FA_INSTALL_DIR`. From Phase 2/3 on,
 2. Calls the appropriate fx_lib parser to decode the FA binary format
 3. Hands the decoded data to `transcode/` and returns canonical-format bytes
 
-A translation cache sits between transcode and the engine — converted assets are cached
-on first load so repeated requests (e.g. a texture used by many models) don't re-parse
-and re-encode the source each time.
+A translation cache (`bridge/src/TranslationCache.{h,cpp}`, issue #13) sits between
+transcode and the engine so repeated requests don't re-parse and re-encode the source
+each time. Design: a per-user byte store under the platform cache dir
+(`$XDG_CACHE_HOME`/`%LOCALAPPDATA%`/`~/Library/Caches` + `fighters-legacy/fa-bridge/`),
+keyed by stage (`extract` today; `png`/`glb`/`ogg`/`toml` with Phase 3) + asset name +
+a source fingerprint (containing-LIB size and mtime) + a schema version — all embedded
+in the file name, so a changed source self-invalidates as a miss and a schema bump
+forces a global refresh. Writes are temp-file-then-rename (no torn-write hits; no
+checksum needed — contents are regenerable), an unusable cache dir degrades to a no-op,
+and stale-file pruning is deliberately deferred. `readWithCache()` is the shared read
+path: DCL-compressed entries cache decompressed; raw entries stay zero-copy off the map.
 
 ### `transcode/` (planned — Phase 3)
 
