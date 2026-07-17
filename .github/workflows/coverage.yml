@@ -36,13 +36,16 @@ jobs:
 
       - name: Generate lcov report
         run: |
-          # --exclude at capture: FetchContent'd Catch2 gcda reference source
-          # paths that don't exist in the workspace, and geninfo hard-errors on
-          # them before any --remove filter could apply.
+          # --exclude at capture: FetchContent'd Catch2 coverage data references
+          # source paths that don't exist in the workspace (both under _deps and
+          # as phantom build-relative "src/catch2/..." header paths recorded in
+          # our test objects), and geninfo hard-errors on them before any
+          # --remove filter could apply.
           lcov --capture --directory . --output-file coverage.info \
-               --exclude '*/_deps/*' \
+               --exclude '*/_deps/*' --exclude '*/catch2/*' \
                --ignore-errors empty
-          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' '*/_deps/*' \
+          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' \
+               '*/_deps/*' '*/catch2/*' \
                --output-file coverage.info --ignore-errors empty,unused
 
       - name: Upload to Codecov
