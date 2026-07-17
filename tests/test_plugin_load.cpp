@@ -5,6 +5,7 @@
 // contract. argv[1] = plugin path, argv[2] = staged manifest.toml path.
 #undef NDEBUG
 
+#include "TempDir.h"
 #include "content/IContentPack.h"
 
 #include <cassert>
@@ -58,6 +59,10 @@ std::string normalizedManifest(const char* path) {
 
 int main(int argc, char** argv) {
     assert(argc == 3);
+
+    // Hermetic: init() below runs the real discovery chain — never let it read
+    // this machine's persisted config, registry, or drives.
+    fatest::HermeticEnv hermetic;
 
     FactoryFn factory = loadFactory(argv[1]);
     assert(factory != nullptr);

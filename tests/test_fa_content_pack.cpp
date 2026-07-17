@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "FaContentPack.h"
+#include "TempDir.h"
 #include "TestEnv.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -60,37 +61,40 @@ TEST_CASE("hasAsset and listAssets are empty for every type") {
     }
 }
 
-TEST_CASE("init requires FA_INSTALL_DIR pointing at a directory") {
+TEST_CASE("init requires FA_INSTALL_DIR pointing at an FA install") {
+    fatest::HermeticEnv env; // isolates config/registry/probe state on dev boxes
     fa::FaContentPack pack;
 
     SECTION("env unset yields NeedsConfiguration") {
-        unsetEnv("FA_INSTALL_DIR");
         CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
     }
 
     SECTION("non-existent path yields NeedsConfiguration") {
-        const auto missing = std::filesystem::temp_directory_path() / "fa-bridge-test-does-not-exist";
-        std::filesystem::remove_all(missing);
-        setEnv("FA_INSTALL_DIR", missing.string().c_str());
+        fatest::TempDir tmp("init");
+        setEnv("FA_INSTALL_DIR", (tmp.path() / "missing").string().c_str());
         CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
     }
 
     SECTION("existing file yields NeedsConfiguration") {
-        const auto file = std::filesystem::temp_directory_path() / "fa-bridge-test-file";
+        fatest::TempDir tmp("init");
+        const auto file = tmp.path() / "fa-bridge-test-file";
         std::ofstream(file).put('x');
         setEnv("FA_INSTALL_DIR", file.string().c_str());
         CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
-        std::filesystem::remove(file);
     }
 
-    SECTION("existing directory yields Ready, idempotently") {
-        const auto dir = std::filesystem::temp_directory_path() / "fa-bridge-test-dir";
-        std::filesystem::create_directories(dir);
-        setEnv("FA_INSTALL_DIR", dir.string().c_str());
-        CHECK(pack.init() == fl::IContentPack::Status::Ready);
-        CHECK(pack.init() == fl::IContentPack::Status::Ready);
-        std::filesystem::remove_all(dir);
+    SECTION("directory without lib archives yields NeedsConfiguration") {
+        fatest::TempDir tmp("init");
+        std::ofstream(tmp.path() / "README.TXT") << "empty install";
+        setEnv("FA_INSTALL_DIR", tmp.path().string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
     }
 
-    unsetEnv("FA_INSTALL_DIR");
+    SECTION("directory with a lib archive yields Ready, idempotently") {
+        fatest::TempDir tmp("init");
+        fatest::touchLibFile(tmp.path());
+        setEnv("FA_INSTALL_DIR", tmp.path().string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::Ready);
+        CHECK(pack.init() == fl::IContentPack::Status::Ready);
+    }
 }

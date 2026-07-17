@@ -55,9 +55,20 @@ logged.
 - `manifest.toml` declares `name`, `id`, `version`, `engine-api = "1.x"` (major checked),
   and `priority` — set **above 50** so FA content overrides the engine's free
   fl-base-pack in the priority stack.
-- First run: `init()` returns `NeedsConfiguration` when no FA install is known;
-  the engine then calls `configure(window)`, which hosts the "locate your FA
-  installation" flow and persists `FA_INSTALL_DIR`.
+- Install discovery: `init()` runs a chain — `FA_INSTALL_DIR` env var → the
+  persisted config file (`<config dir>/fighters-legacy/fa-bridge/config.toml`;
+  platform config dir, `$XDG_CONFIG_HOME`/`%APPDATA%`/`~/Library/Application
+  Support`) → Windows-only best-effort probes (registry, then
+  `<drive>:\JANES\Fighters Anthology` on fixed drives). A candidate counts as
+  an FA install only if it contains at least one `.LIB`, matched
+  case-insensitively. First valid candidate wins; none → `NeedsConfiguration`.
+- First run: on `NeedsConfiguration` the engine calls `configure(window)`, which
+  loops an OS-native folder picker (`IWindow::showFolderDialog`, engine#665)
+  with a Retry/Cancel warning box on invalid selections, persists the confirmed
+  path to the config file, and returns false on cancel (the engine then drops
+  the pack for the session — by contract). Headless hosts pass no window and
+  the pack is skipped the same way. Env knobs for tests/dev:
+  `FA_BRIDGE_CONFIG_DIR`, `FA_BRIDGE_CACHE_DIR`, `FA_BRIDGE_NO_PROBE`.
 - As a native, unsigned plugin the engine surfaces consent prompts
   (`onNativeCodePackLoaded`, `onUntrustedPackLoaded`) — expected behaviour.
 - **ABI discipline:** `std::optional`/`std::string`/`std::vector` cross the plugin

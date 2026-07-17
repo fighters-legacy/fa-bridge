@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "FaContentPack.h"
 
+#include "BridgeConfig.h"
 #include "FaBridgeVersion.h"
+#include "FaInstallLocator.h"
+#include "platform/IWindow.h"
 
-#include <cstdlib>
+#include <string>
+#include <utility>
 
 namespace fa {
 
@@ -39,22 +43,54 @@ const char* FaContentPack::rootDirectory() const {
 }
 
 FaContentPack::Status FaContentPack::init() {
-    // Phase 1: ready only when FA_INSTALL_DIR points at an existing directory.
-    // The configure() flow that discovers and persists the install is Phase 2.
-    const char* dir = std::getenv("FA_INSTALL_DIR");
-    if (dir != nullptr && *dir != '\0') {
-        std::error_code ec;
-        if (std::filesystem::is_directory(dir, ec)) {
-            m_installDir = dir;
-            return Status::Ready;
-        }
+    // Discovery chain: FA_INSTALL_DIR env -> persisted config -> Windows
+    // registry/drive probes. A candidate must contain at least one .LIB
+    // (matched case-insensitively) to count as an FA install.
+    if (auto dir = FaInstallLocator::discover(BridgeConfig::defaultPath())) {
+        m_installDir = std::move(*dir);
+        return Status::Ready;
     }
     m_installDir.clear();
     return Status::NeedsConfiguration;
 }
 
-bool FaContentPack::configure(fl::IWindow*) {
-    return false;
+bool FaContentPack::configure(fl::IWindow* window) {
+    if (window == nullptr)
+        return false;
+
+    std::string lastAttempt;
+    for (;;) {
+        const auto picked = window->showFolderDialog("Locate your Fighters Anthology installation",
+                                                     lastAttempt.empty() ? nullptr : lastAttempt.c_str());
+        if (!picked)
+            return false; // cancelled, dialog error, or a backend with no picker
+
+        std::filesystem::path dir(*picked);
+        if (FaInstallLocator::isValidInstallDir(dir)) {
+            BridgeConfig config{dir};
+            const auto file = BridgeConfig::defaultPath();
+            if (file.empty() || !config.save(file)) {
+                // Non-fatal: the pack works this session; the next launch
+                // re-runs discovery and may ask again.
+                const fl::IWindow::MessageBoxButton ok[] = {{0, "OK"}};
+                window->showMessageBox(fl::IWindow::MessageBoxType::Warning, "Fighters Anthology Bridge",
+                                       "The install location could not be saved and may be asked for "
+                                       "again next launch.",
+                                       ok, 1);
+            }
+            m_installDir = std::move(dir);
+            return true;
+        }
+
+        lastAttempt = *picked;
+        const std::string message = *picked + "\n\nNo .LIB archives were found in this folder. Select the folder "
+                                              "that contains the Fighters Anthology archives (e.g. FA_1.LIB).";
+        const fl::IWindow::MessageBoxButton buttons[] = {{0, "Retry"}, {1, "Cancel"}};
+        const int clicked = window->showMessageBox(
+            fl::IWindow::MessageBoxType::Warning, "Not a Fighters Anthology installation", message.c_str(), buttons, 2);
+        if (clicked != 0)
+            return false; // Cancel button, or -1 error/dismiss
+    }
 }
 
 bool FaContentPack::hasAsset(const char*, fl::AssetType) const {

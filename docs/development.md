@@ -96,6 +96,31 @@ is deliberately a plain executable, not a Catch2 target: it rehearses the engine
 
 ---
 
+## Install discovery and configuration
+
+At `init()` the plugin locates the FA install through a chain — first valid
+candidate wins, and a candidate must contain at least one `.LIB` file (matched
+case-insensitively):
+
+1. `FA_INSTALL_DIR` environment variable (explicit override)
+2. the persisted config file — `fighters-legacy/fa-bridge/config.toml` under the
+   platform config dir (`$XDG_CONFIG_HOME` or `~/.config` on Linux, `%APPDATA%`
+   on Windows, `~/Library/Application Support` on macOS)
+3. Windows only: a best-effort registry probe, then
+   `<drive>:\JANES\Fighters Anthology` on each fixed drive
+
+When nothing is found, the game client shows a native folder picker on first
+run and persists the confirmed path; deleting the config file re-triggers the
+flow. Dev/test environment knobs (each overrides the default behaviour):
+
+| Variable | Effect |
+|---|---|
+| `FA_BRIDGE_CONFIG_DIR` | overrides the config directory |
+| `FA_BRIDGE_CACHE_DIR` | overrides the cache directory |
+| `FA_BRIDGE_NO_PROBE` | skips the registry/drive probes |
+
+---
+
 ## Runtime testing against a real FA installation (from Phase 2 onward)
 
 Set `FA_INSTALL_DIR` to point at your FA installation directory before running integration tests:
