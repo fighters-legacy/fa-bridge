@@ -7,6 +7,33 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **build** link fx_lib unconditionally and retire FA_WITH_FX_LIB — the codex root
+  embeds as a subproject (`fx::lib` + `fx::render`) and this repo's 3-OS CI is the
+  proving ground for the remaining upstream macOS gap (codex#155) (#32)
+- **bridge** FA install discovery, persistence, and configure() first run — env var →
+  persisted config → Windows registry/drive probes, then a native folder-picker flow on
+  `IWindow::showFolderDialog` (engine#665) with per-OS config under the platform config
+  dir (#11)
+- **bridge** mount LIB archives and answer hasAsset and listAssets — memory-mapped,
+  case-insensitive flat name index in the shape of FA's own `LibStartUp` hint index
+  (last registration wins, deterministic mount order); `load*()` stays Phase 3 (#32)
+- **bridge** on-disk translation cache keyed by source fingerprint — self-invalidating
+  per-user store under the platform cache dir; `readWithCache()` is the shared read
+  path for the Phase 3 transcoders (#13)
+
+### Changed
+- **test** Catch2 v3.7.1 adopted as the unit-test framework (FetchContent, the
+  fighters-codex precedent); `test_plugin_load` deliberately stays a plain
+  ModLoader-rehearsal executable (#38)
+- **build** fl-headers re-vendored at engine v0.3.6 — implements the grown
+  `IContentPack` contract (`namespaceId()` = "fa", sensor/weapon/manual loaders,
+  `resolveTilePath`) and vendors the `IWindow` platform header set for `configure()`
+- **readme** refresh fighters-codex relationship (fx_lib on Linux, fx_render, fxc) (#61)
+- **docs** asset support matrix refreshed against fx_lib v0.8.4 (music now in-lib, T2
+  full band read/write, SH state/articulation, campaign/UI/video parsers) and the
+  engine's v0.3.x asset-type split; README `fxc` misnomer corrected to `fxe`
+
 ## [0.2.1] - 2026-07-02
 
 Built against fighters-codex v0.3.0 (`extern/fx_lib`).

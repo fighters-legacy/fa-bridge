@@ -19,13 +19,16 @@ No FA game assets are included or may be committed to this repository.
 
 ## Status
 
-**Plugin skeleton (roadmap Phase 1).** The plugin builds on all three platforms as
-`libfa-bridge.so` / `fa-bridge.dll` / `libfa-bridge.dylib` with a stub `IContentPack`
-that the engine's `ModLoader` can load; it identifies itself and reports readiness from
-`FA_INSTALL_DIR`, but serves no assets yet. Transcoding lands per the phase plan in
-[docs/roadmap.md](docs/roadmap.md). Which FA content is already fully understood and
-ready to bridge — aircraft flight models, entity stats, ~95% of 3D models, all 2D art,
-sound effects — is tracked in
+**fx_lib integration (roadmap Phase 2).** The plugin builds on all three platforms as
+`libfa-bridge.so` / `fa-bridge.dll` / `libfa-bridge.dylib` with fx_lib linked
+unconditionally. It discovers the user's FA install (env var → persisted config →
+Windows registry/drive probes), hosts a native folder-picker first-run flow via the
+engine window, mounts every `.LIB` archive into a case-insensitive memory-mapped VFS,
+and answers `hasAsset`/`listAssets` truthfully from the mount; a self-invalidating
+translation cache underpins the coming transcoders. **It still serves no transcoded
+assets** — the `load*()` pipelines are roadmap Phase 3. Which FA content is ready to
+bridge — aircraft flight models, entity/weapon/sensor stats, ~95% of 3D models, all 2D
+art, sound effects — is tracked in
 [docs/asset-support-matrix.md](docs/asset-support-matrix.md).
 
 ## Dependencies
@@ -39,9 +42,10 @@ The reverse-engineering documentation this bridge builds on lives in
 [fighters-codex](https://github.com/jomkz/fighters-codex) (the FA reconstruction). Two of its
 components are worth noting for the engine-side work: **fx_render** — a shared MIT render module
 (OpenGL + FA-faithful software backends), built engine-agnostic so the classic/parity render path can
-adopt it instead of a bespoke rasterizer — and **fxc**, a clean-room MIT *source port* of the game
-executable. fxc is an **independent sibling** that validates the same reconstruction; it is **not a
-dependency** of this bridge.
+adopt it instead of a bespoke rasterizer — and **fxe**, a clean-room MIT *source port* of the game
+executable. fxe is an **independent sibling** that validates the same reconstruction; it is **not a
+dependency** of this bridge. (fx_render builds as part of the submodule embed; the bridge links only
+`fx::lib`.)
 
 ## Quick start
 

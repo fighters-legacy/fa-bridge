@@ -38,7 +38,7 @@ jobs:
         run: |
           lcov --capture --directory . --output-file coverage.info \
                --ignore-errors empty
-          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' \
+          lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' '*/_deps/*' \
                --output-file coverage.info --ignore-errors empty,unused
 
       - name: Upload to Codecov

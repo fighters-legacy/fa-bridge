@@ -153,12 +153,14 @@ engine scans (`fl-server`: the working directory; the game: next to the binary):
 
 ```bash
 cp -r build/debug/stage/mods/fa-bridge /path/to/engine/mods/
-FA_INSTALL_DIR=/path/to/anything ./fl-server
+FA_INSTALL_DIR="/path/to/Janes Fighters Anthology" ./fl-server
 ```
 
-Set `FA_INSTALL_DIR` to an existing directory so the stub reports `Ready` —
-otherwise the engine's `AssetManager` drops the pack after loading it
-(`NeedsConfiguration` with no configure UI), which is correct but noisy.
+Point `FA_INSTALL_DIR` at a real FA install (it must contain at least one
+parseable `.LIB`) so the pack mounts and reports `Ready`. Headless hosts pass
+no window, so a pack that cannot discover an install is dropped after loading
+(`NeedsConfiguration` with no configure UI) — correct but noisy. In the game
+client the same situation opens the first-run folder picker instead.
 
 **Windows:** the plugin and the engine must be built in the **same configuration**
 (Debug with Debug, Release with Release) — mixed CRT/iterator-debug-level builds fail
@@ -192,7 +194,7 @@ cmake --preset coverage
 cmake --build --preset coverage
 ctest --preset coverage --output-on-failure
 lcov --capture --directory . --output-file coverage.info
-lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' \
+lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' '*/_deps/*' \
      --output-file coverage.info
 ```
 
