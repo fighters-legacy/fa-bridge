@@ -18,6 +18,10 @@ TEST_CASE("pack identity is stable") {
 
     CHECK(std::strcmp(pack.id(), "fa-bridge") == 0);
     CHECK(std::strcmp(pack.name(), "Fighters Anthology Bridge") == 0);
+    // Def-id namespace: short form per the fl-base precedent, must match the
+    // manifest's `namespace` field, never contains ':'.
+    CHECK(std::strcmp(pack.namespaceId(), "fa") == 0);
+    CHECK(std::strchr(pack.namespaceId(), ':') == nullptr);
     CHECK((pack.version() != nullptr && *pack.version() != '\0'));
     CHECK(pack.priority() == 100);
     CHECK(pack.priority() > 50); // must override fl-base-pack in the stack
@@ -38,8 +42,12 @@ TEST_CASE("stub load methods return nullopt") {
     CHECK_FALSE(pack.loadTerrain("any"));
     CHECK_FALSE(pack.loadAIScript("any"));
     CHECK_FALSE(pack.loadEntityDef("any"));
+    CHECK_FALSE(pack.loadSensorDef("any"));
+    CHECK_FALSE(pack.loadWeaponDef("any"));
+    CHECK_FALSE(pack.loadManualProse("any"));
+    CHECK_FALSE(pack.loadLivery("any"));
     CHECK_FALSE(pack.loadConfig("difficulty.toml"));
-    CHECK_FALSE(pack.resolveTerrainChunk("world", 0, 0, 0));
+    CHECK_FALSE(pack.resolveTilePath("world", 0, 0, 0, 0, fl::TileLayer::Height));
 }
 
 TEST_CASE("hasAsset and listAssets are empty for every type") {

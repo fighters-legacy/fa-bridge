@@ -29,7 +29,7 @@ SPDX-License-Identifier = "GPL-3.0-or-later"
 # IContentPack.h carries the engine's linking exception in its header comment;
 # the exception has no SPDX identifier, so the in-file text is authoritative.
 [[annotations]]
-path = ["extern/fl-headers/content/**"]
+path = ["extern/fl-headers/content/**", "extern/fl-headers/platform/**"]
 SPDX-FileCopyrightText = "2026 MKZ Systems LLC"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 

@@ -32,7 +32,7 @@ sound effects — is tracked in
 
 | Dependency | Source |
 |---|---|
-| fighters-legacy | Engine interface headers (`IContentPack.h`), vendored at `extern/fl-headers`, pinned to engine v0.2.6 ([PIN.md](extern/fl-headers/PIN.md)) |
+| fighters-legacy | Engine interface headers (`IContentPack.h` + the `IWindow` set for `configure()`), vendored at `extern/fl-headers`, pinned to engine v0.3.6 ([PIN.md](extern/fl-headers/PIN.md)) |
 | fx_lib | `extern/fx_lib` submodule from [fighters-codex](https://github.com/jomkz/fighters-codex), pinned to a release tag |
 
 The reverse-engineering documentation this bridge builds on lives in

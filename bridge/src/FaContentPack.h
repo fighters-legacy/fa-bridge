@@ -19,6 +19,7 @@ class FaContentPack : public fl::IContentPack {
     const char* name() const override;
     const char* version() const override;
     const char* id() const override;
+    const char* namespaceId() const override;
     int priority() const override;
     const char* rootDirectory() const override;
 
@@ -35,13 +36,16 @@ class FaContentPack : public fl::IContentPack {
     std::optional<fl::TerrainData> loadTerrain(const char* name) override;
     std::optional<fl::AIScript> loadAIScript(const char* name) override;
     std::optional<fl::EntityDefData> loadEntityDef(const char* name) override;
+    std::optional<fl::SensorDefData> loadSensorDef(const char* name) override;
+    std::optional<fl::WeaponDefData> loadWeaponDef(const char* name) override;
+    std::optional<fl::ManualProse> loadManualProse(const char* name) override;
 
     std::vector<std::string> listAssets(fl::AssetType type) const override;
 
     std::optional<std::string> loadConfig(const char* name) const override;
 
-    std::optional<std::string> resolveTerrainChunk(const char* terrainId, uint32_t chunkX, uint32_t chunkY,
-                                                   uint32_t lod) const override;
+    std::optional<std::string> resolveTilePath(const char* terrainId, uint8_t face, uint8_t level, uint32_t i,
+                                               uint32_t j, fl::TileLayer layer) const override;
 
     fl::TrustLevel getTrustLevel() const override;
     bool isNativePlugin() const override;

@@ -21,6 +21,13 @@ const char* FaContentPack::id() const {
     return "fa-bridge";
 }
 
+const char* FaContentPack::namespaceId() const {
+    // Def-id namespace ("fa:<local>"), declared as `[mod] namespace` in the
+    // manifest. Deliberately shorter than the manifest id, following the
+    // fl-base-pack precedent (manifest id "fl-base-pack", namespace "fl-base").
+    return "fa";
+}
+
 int FaContentPack::priority() const {
     return kPriority;
 }
@@ -86,6 +93,18 @@ std::optional<fl::EntityDefData> FaContentPack::loadEntityDef(const char*) {
     return std::nullopt;
 }
 
+std::optional<fl::SensorDefData> FaContentPack::loadSensorDef(const char*) {
+    return std::nullopt;
+}
+
+std::optional<fl::WeaponDefData> FaContentPack::loadWeaponDef(const char*) {
+    return std::nullopt;
+}
+
+std::optional<fl::ManualProse> FaContentPack::loadManualProse(const char*) {
+    return std::nullopt;
+}
+
 std::vector<std::string> FaContentPack::listAssets(fl::AssetType) const {
     return {};
 }
@@ -94,7 +113,8 @@ std::optional<std::string> FaContentPack::loadConfig(const char*) const {
     return std::nullopt;
 }
 
-std::optional<std::string> FaContentPack::resolveTerrainChunk(const char*, uint32_t, uint32_t, uint32_t) const {
+std::optional<std::string> FaContentPack::resolveTilePath(const char*, uint8_t, uint8_t, uint32_t, uint32_t,
+                                                          fl::TileLayer) const {
     return std::nullopt;
 }
 

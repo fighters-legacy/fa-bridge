@@ -101,11 +101,14 @@ What each parser can deliver today is tracked in
 
 ### `extern/fl-headers` (exists)
 
-Verbatim copies of the engine's three interface headers (`IContentPack.h`,
-`AssetTypes.h`, `TrustLevel.h` — a closed, std-only set), currently pinned to engine
-**v0.2.6**. [PIN.md](../extern/fl-headers/PIN.md) records the tag/SHA, per-file hashes,
-and the update procedure. Vendored because the engine exports no CMake package; the
-headers carry a GPL linking exception.
+Verbatim copies of the engine's interface headers — the content-pack set
+(`IContentPack.h`, `AssetTypes.h`, `TrustLevel.h`) plus the window set the first-run
+`configure()` flow calls (`IWindow.h` with its includes `IDisplay.h`,
+`IWindowEventHandler.h`) — a closed, std-only set, currently pinned to engine
+**v0.3.6**. [PIN.md](../extern/fl-headers/PIN.md) records the tag/SHA, per-file hashes,
+the update procedure, and the `IWindow` vtable/ABI note (engine and plugin rebuild
+together across window-interface changes). Vendored because the engine exports no
+CMake package; the content headers carry a GPL linking exception.
 
 ---
 

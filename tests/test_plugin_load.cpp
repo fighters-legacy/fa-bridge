@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
     assert(a != nullptr && b != nullptr && a != b);
 
     assert(std::strcmp(a->id(), "fa-bridge") == 0);
+    assert(std::strcmp(a->namespaceId(), "fa") == 0);
     assert(a->priority() == 100);
     assert(a->isNativePlugin());
     assert(a->version() != nullptr && *a->version() != '\0');
@@ -80,6 +81,7 @@ int main(int argc, char** argv) {
     const std::string manifest = normalizedManifest(argv[2]);
     assert(!manifest.empty());
     assert(manifest.find("id=\"fa-bridge\"") != std::string::npos);
+    assert(manifest.find("namespace=\"fa\"") != std::string::npos);
     assert(manifest.find("priority=100") != std::string::npos);
     assert(manifest.find("engine-api=\"1.0\"") != std::string::npos);
     assert(manifest.find(std::string("version=\"") + a->version() + "\"") != std::string::npos);
