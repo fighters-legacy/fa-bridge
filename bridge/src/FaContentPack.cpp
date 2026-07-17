@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "FaContentPack.h"
 
+#include "AsciiCase.h"
+#include "BridgeConfig.h"
+#include "FaAssetTypes.h"
 #include "FaBridgeVersion.h"
+#include "FaInstallLocator.h"
+#include "PlatformPaths.h"
+#include "platform/IWindow.h"
 
-#include <cstdlib>
+#include <string>
+#include <utility>
 
 namespace fa {
 
@@ -21,6 +28,13 @@ const char* FaContentPack::id() const {
     return "fa-bridge";
 }
 
+const char* FaContentPack::namespaceId() const {
+    // Def-id namespace ("fa:<local>"), declared as `[mod] namespace` in the
+    // manifest. Deliberately shorter than the manifest id, following the
+    // fl-base-pack precedent (manifest id "fl-base-pack", namespace "fl-base").
+    return "fa";
+}
+
 int FaContentPack::priority() const {
     return kPriority;
 }
@@ -32,26 +46,68 @@ const char* FaContentPack::rootDirectory() const {
 }
 
 FaContentPack::Status FaContentPack::init() {
-    // Phase 1: ready only when FA_INSTALL_DIR points at an existing directory.
-    // The configure() flow that discovers and persists the install is Phase 2.
-    const char* dir = std::getenv("FA_INSTALL_DIR");
-    if (dir != nullptr && *dir != '\0') {
-        std::error_code ec;
-        if (std::filesystem::is_directory(dir, ec)) {
-            m_installDir = dir;
+    // Discovery chain: FA_INSTALL_DIR env -> persisted config -> Windows
+    // registry/drive probes. A candidate must contain at least one .LIB
+    // (matched case-insensitively) to count as an FA install, and Ready
+    // additionally requires that at least one archive actually mounts.
+    if (auto dir = FaInstallLocator::discover(BridgeConfig::defaultPath())) {
+        if (m_vfs.mount(*dir)) {
+            m_installDir = std::move(*dir);
+            m_cache = TranslationCache(cacheDir());
             return Status::Ready;
         }
     }
+    m_vfs.clear();
     m_installDir.clear();
     return Status::NeedsConfiguration;
 }
 
-bool FaContentPack::configure(fl::IWindow*) {
-    return false;
+bool FaContentPack::configure(fl::IWindow* window) {
+    if (window == nullptr)
+        return false;
+
+    std::string lastAttempt;
+    for (;;) {
+        const auto picked = window->showFolderDialog("Locate your Fighters Anthology installation",
+                                                     lastAttempt.empty() ? nullptr : lastAttempt.c_str());
+        if (!picked)
+            return false; // cancelled, dialog error, or a backend with no picker
+
+        std::filesystem::path dir(*picked);
+        if (FaInstallLocator::isValidInstallDir(dir) && m_vfs.mount(dir)) {
+            BridgeConfig config{dir};
+            const auto file = BridgeConfig::defaultPath();
+            if (file.empty() || !config.save(file)) {
+                // Non-fatal: the pack works this session; the next launch
+                // re-runs discovery and may ask again.
+                const fl::IWindow::MessageBoxButton ok[] = {{0, "OK"}};
+                window->showMessageBox(fl::IWindow::MessageBoxType::Warning, "Fighters Anthology Bridge",
+                                       "The install location could not be saved and may be asked for "
+                                       "again next launch.",
+                                       ok, 1);
+            }
+            m_installDir = std::move(dir);
+            m_cache = TranslationCache(cacheDir());
+            return true;
+        }
+
+        lastAttempt = *picked;
+        const std::string message = *picked + "\n\nNo usable .LIB archives were found in this folder. Select the "
+                                              "folder that contains the Fighters Anthology archives (e.g. FA_1.LIB).";
+        const fl::IWindow::MessageBoxButton buttons[] = {{0, "Retry"}, {1, "Cancel"}};
+        const int clicked = window->showMessageBox(
+            fl::IWindow::MessageBoxType::Warning, "Not a Fighters Anthology installation", message.c_str(), buttons, 2);
+        if (clicked != 0)
+            return false; // Cancel button, or -1 error/dismiss
+    }
 }
 
-bool FaContentPack::hasAsset(const char*, fl::AssetType) const {
-    return false;
+bool FaContentPack::hasAsset(const char* name, fl::AssetType type) const {
+    // The engine passes hasAsset() names through raw (only load*() names are
+    // pre-lowercased), so the fold happens here, inside the VFS lookup.
+    if (name == nullptr)
+        return false;
+    return m_vfs.findStem(name, extensionsFor(type)).has_value();
 }
 
 std::optional<fl::MeshData> FaContentPack::loadMesh(const char*) {
@@ -86,15 +142,31 @@ std::optional<fl::EntityDefData> FaContentPack::loadEntityDef(const char*) {
     return std::nullopt;
 }
 
-std::vector<std::string> FaContentPack::listAssets(fl::AssetType) const {
-    return {};
+std::optional<fl::SensorDefData> FaContentPack::loadSensorDef(const char*) {
+    return std::nullopt;
+}
+
+std::optional<fl::WeaponDefData> FaContentPack::loadWeaponDef(const char*) {
+    return std::nullopt;
+}
+
+std::optional<fl::ManualProse> FaContentPack::loadManualProse(const char*) {
+    return std::nullopt;
+}
+
+std::vector<std::string> FaContentPack::listAssets(fl::AssetType type) const {
+    // Truthful listing from the mount: engine asset names are extension-less
+    // lowercase stems; the type conveys the kind. FA prefix characters (&, ^,
+    // $) are preserved — transcode-time naming policy is a Phase 3 decision.
+    return m_vfs.listStems(extensionsFor(type));
 }
 
 std::optional<std::string> FaContentPack::loadConfig(const char*) const {
     return std::nullopt;
 }
 
-std::optional<std::string> FaContentPack::resolveTerrainChunk(const char*, uint32_t, uint32_t, uint32_t) const {
+std::optional<std::string> FaContentPack::resolveTilePath(const char*, uint8_t, uint8_t, uint32_t, uint32_t,
+                                                          fl::TileLayer) const {
     return std::nullopt;
 }
 

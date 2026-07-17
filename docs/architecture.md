@@ -55,9 +55,20 @@ logged.
 - `manifest.toml` declares `name`, `id`, `version`, `engine-api = "1.x"` (major checked),
   and `priority` — set **above 50** so FA content overrides the engine's free
   fl-base-pack in the priority stack.
-- First run: `init()` returns `NeedsConfiguration` when no FA install is known;
-  the engine then calls `configure(window)`, which hosts the "locate your FA
-  installation" flow and persists `FA_INSTALL_DIR`.
+- Install discovery: `init()` runs a chain — `FA_INSTALL_DIR` env var → the
+  persisted config file (`<config dir>/fighters-legacy/fa-bridge/config.toml`;
+  platform config dir, `$XDG_CONFIG_HOME`/`%APPDATA%`/`~/Library/Application
+  Support`) → Windows-only best-effort probes (registry, then
+  `<drive>:\JANES\Fighters Anthology` on fixed drives). A candidate counts as
+  an FA install only if it contains at least one `.LIB`, matched
+  case-insensitively. First valid candidate wins; none → `NeedsConfiguration`.
+- First run: on `NeedsConfiguration` the engine calls `configure(window)`, which
+  loops an OS-native folder picker (`IWindow::showFolderDialog`, engine#665)
+  with a Retry/Cancel warning box on invalid selections, persists the confirmed
+  path to the config file, and returns false on cancel (the engine then drops
+  the pack for the session — by contract). Headless hosts pass no window and
+  the pack is skipped the same way. Env knobs for tests/dev:
+  `FA_BRIDGE_CONFIG_DIR`, `FA_BRIDGE_CACHE_DIR`, `FA_BRIDGE_NO_PROBE`.
 - As a native, unsigned plugin the engine surfaces consent prompts
   (`onNativeCodePackLoaded`, `onUntrustedPackLoaded`) — expected behaviour.
 - **ABI discipline:** `std::optional`/`std::string`/`std::vector` cross the plugin
@@ -80,9 +91,17 @@ nullopt and `init()` reports readiness from `FA_INSTALL_DIR`. From Phase 2/3 on,
 2. Calls the appropriate fx_lib parser to decode the FA binary format
 3. Hands the decoded data to `transcode/` and returns canonical-format bytes
 
-A translation cache sits between transcode and the engine — converted assets are cached
-on first load so repeated requests (e.g. a texture used by many models) don't re-parse
-and re-encode the source each time.
+A translation cache (`bridge/src/TranslationCache.{h,cpp}`, issue #13) sits between
+transcode and the engine so repeated requests don't re-parse and re-encode the source
+each time. Design: a per-user byte store under the platform cache dir
+(`$XDG_CACHE_HOME`/`%LOCALAPPDATA%`/`~/Library/Caches` + `fighters-legacy/fa-bridge/`),
+keyed by stage (`extract` today; `png`/`glb`/`ogg`/`toml` with Phase 3) + asset name +
+a source fingerprint (containing-LIB size and mtime) + a schema version — all embedded
+in the file name, so a changed source self-invalidates as a miss and a schema bump
+forces a global refresh. Writes are temp-file-then-rename (no torn-write hits; no
+checksum needed — contents are regenerable), an unusable cache dir degrades to a no-op,
+and stale-file pruning is deliberately deferred. `readWithCache()` is the shared read
+path: DCL-compressed entries cache decompressed; raw entries stay zero-copy off the map.
 
 ### `transcode/` (planned — Phase 3)
 
@@ -99,13 +118,30 @@ a release tag. Provides the FA format parsers; the bridge never duplicates parse
 What each parser can deliver today is tracked in
 [asset-support-matrix.md](asset-support-matrix.md).
 
+### Install mount — `FaVfs` (exists)
+
+`bridge/src/FaVfs.{h,cpp}` mounts every `.LIB` in the confirmed install as one
+flat, case-insensitive name index — the same shape FA builds at startup
+(`LibStartUp`'s hint index, fighters-codex `docs/fa/memory-resource.md`).
+Archives are memory-mapped (`MappedFile`), directories parsed by
+`fx::ealib_read_dir` (`LibArchive` validates magic and entry count itself —
+LIBs are untrusted input), and duplicate names resolve to the last
+registration in deterministic case-folded filename order. `hasAsset` and
+`listAssets` answer truthfully from the mount via the per-type extension
+table (`FaAssetTypes`, mirrored in the asset support matrix); the `load*()`
+transcoders are Phase 3, so the engine currently falls through to
+lower-priority packs for actual bytes.
+
 ### `extern/fl-headers` (exists)
 
-Verbatim copies of the engine's three interface headers (`IContentPack.h`,
-`AssetTypes.h`, `TrustLevel.h` — a closed, std-only set), currently pinned to engine
-**v0.2.6**. [PIN.md](../extern/fl-headers/PIN.md) records the tag/SHA, per-file hashes,
-and the update procedure. Vendored because the engine exports no CMake package; the
-headers carry a GPL linking exception.
+Verbatim copies of the engine's interface headers — the content-pack set
+(`IContentPack.h`, `AssetTypes.h`, `TrustLevel.h`) plus the window set the first-run
+`configure()` flow calls (`IWindow.h` with its includes `IDisplay.h`,
+`IWindowEventHandler.h`) — a closed, std-only set, currently pinned to engine
+**v0.3.6**. [PIN.md](../extern/fl-headers/PIN.md) records the tag/SHA, per-file hashes,
+the update procedure, and the `IWindow` vtable/ABI note (engine and plugin rebuild
+together across window-interface changes). Vendored because the engine exports no
+CMake package; the content headers carry a GPL linking exception.
 
 ---
 

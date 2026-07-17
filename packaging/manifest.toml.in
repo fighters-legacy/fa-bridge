@@ -2,13 +2,16 @@
 #
 # Template for the mod manifest the engine's ModLoader parses. Configured at
 # build time into <build>/stage/mods/fa-bridge/manifest.toml beside the plugin.
-# All five [mod] fields are required by the parser; `id` must stay equal to the
-# shared-library target name (the loader derives the plugin filename from it),
-# and `priority` stays above fl-base-pack's 50 so FA content overrides it.
+# `id` must stay equal to the shared-library target name (the loader derives
+# the plugin filename from it), `priority` stays above fl-base-pack's 50 so FA
+# content overrides it, and `namespace` is the def-id prefix ("fa:<local>") —
+# deliberately shorter than the id, following the fl-base-pack precedent. It
+# must match FaContentPack::namespaceId().
 
 [mod]
 name        = "Fighters Anthology Bridge"
 id          = "fa-bridge"
+namespace   = "fa"
 version     = "@PROJECT_VERSION@"
 engine-api  = "1.0"
 priority    = 100

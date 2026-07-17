@@ -1,97 +1,108 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// Assert-based smoke test for the stub pack (the framework choice is a
-// Phase 2 decision, issue #38). Asserts must fire in every configuration.
-#undef NDEBUG
-
 #include "FaContentPack.h"
+#include "SyntheticLib.h"
+#include "TempDir.h"
+#include "TestEnv.h"
 
-#include <cassert>
+#include <catch2/catch_test_macros.hpp>
+
 #include <cstdint>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 
-namespace {
+using fatest::setEnv;
+using fatest::unsetEnv;
 
-void setEnv(const char* name, const char* value) {
-#if defined(_WIN32)
-    _putenv_s(name, value);
-#else
-    setenv(name, value, 1);
-#endif
-}
-
-void unsetEnv(const char* name) {
-#if defined(_WIN32)
-    _putenv_s(name, "");
-#else
-    unsetenv(name);
-#endif
-}
-
-} // namespace
-
-int main() {
+TEST_CASE("pack identity is stable") {
     fa::FaContentPack pack;
 
-    // Identity
-    assert(std::strcmp(pack.id(), "fa-bridge") == 0);
-    assert(std::strcmp(pack.name(), "Fighters Anthology Bridge") == 0);
-    assert(pack.version() != nullptr && *pack.version() != '\0');
-    assert(pack.priority() == 100);
-    assert(pack.priority() > 50); // must override fl-base-pack in the stack
-    assert(pack.rootDirectory() == nullptr);
-    assert(pack.getTrustLevel() == fl::TrustLevel::Unsigned);
-    assert(pack.isNativePlugin());
+    CHECK(std::strcmp(pack.id(), "fa-bridge") == 0);
+    CHECK(std::strcmp(pack.name(), "Fighters Anthology Bridge") == 0);
+    // Def-id namespace: short form per the fl-base precedent, must match the
+    // manifest's `namespace` field, never contains ':'.
+    CHECK(std::strcmp(pack.namespaceId(), "fa") == 0);
+    CHECK(std::strchr(pack.namespaceId(), ':') == nullptr);
+    CHECK((pack.version() != nullptr && *pack.version() != '\0'));
+    CHECK(pack.priority() == 100);
+    CHECK(pack.priority() > 50); // must override fl-base-pack in the stack
+    CHECK(pack.rootDirectory() == nullptr);
+    CHECK(pack.getTrustLevel() == fl::TrustLevel::Unsigned);
+    CHECK(pack.isNativePlugin());
+}
 
-    // Stub behaviour: nothing is served yet
-    assert(!pack.configure(nullptr));
-    assert(!pack.loadMesh("any"));
-    assert(!pack.loadTexture("any"));
-    assert(!pack.loadAudio("any"));
-    assert(!pack.loadFlightModel("any"));
-    assert(!pack.loadMission("any"));
-    assert(!pack.loadTerrain("any"));
-    assert(!pack.loadAIScript("any"));
-    assert(!pack.loadEntityDef("any"));
-    assert(!pack.loadConfig("difficulty.toml"));
-    assert(!pack.resolveTerrainChunk("world", 0, 0, 0));
+TEST_CASE("stub load methods return nullopt") {
+    fa::FaContentPack pack;
+
+    CHECK_FALSE(pack.configure(nullptr));
+    CHECK_FALSE(pack.loadMesh("any"));
+    CHECK_FALSE(pack.loadTexture("any"));
+    CHECK_FALSE(pack.loadAudio("any"));
+    CHECK_FALSE(pack.loadFlightModel("any"));
+    CHECK_FALSE(pack.loadMission("any"));
+    CHECK_FALSE(pack.loadTerrain("any"));
+    CHECK_FALSE(pack.loadAIScript("any"));
+    CHECK_FALSE(pack.loadEntityDef("any"));
+    CHECK_FALSE(pack.loadSensorDef("any"));
+    CHECK_FALSE(pack.loadWeaponDef("any"));
+    CHECK_FALSE(pack.loadManualProse("any"));
+    CHECK_FALSE(pack.loadLivery("any"));
+    CHECK_FALSE(pack.loadConfig("difficulty.toml"));
+    CHECK_FALSE(pack.resolveTilePath("world", 0, 0, 0, 0, fl::TileLayer::Height));
+}
+
+TEST_CASE("hasAsset and listAssets are empty for every type") {
+    fa::FaContentPack pack;
 
     for (uint8_t t = 0; t < static_cast<uint8_t>(fl::AssetType::Count); ++t) {
         const auto type = static_cast<fl::AssetType>(t);
-        assert(!pack.hasAsset("any", type));
-        assert(pack.listAssets(type).empty());
+        CHECK_FALSE(pack.hasAsset("any", type));
+        CHECK(pack.listAssets(type).empty());
+    }
+}
+
+TEST_CASE("init requires FA_INSTALL_DIR pointing at an FA install") {
+    fatest::HermeticEnv env; // isolates config/registry/probe state on dev boxes
+    fa::FaContentPack pack;
+
+    SECTION("env unset yields NeedsConfiguration") {
+        CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
     }
 
-    // init(): env unset → NeedsConfiguration
-    unsetEnv("FA_INSTALL_DIR");
-    assert(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
+    SECTION("non-existent path yields NeedsConfiguration") {
+        fatest::TempDir tmp("init");
+        setEnv("FA_INSTALL_DIR", (tmp.path() / "missing").string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
+    }
 
-    // init(): non-existent path → NeedsConfiguration
-    const auto missing = std::filesystem::temp_directory_path() / "fa-bridge-test-does-not-exist";
-    std::filesystem::remove_all(missing);
-    setEnv("FA_INSTALL_DIR", missing.string().c_str());
-    assert(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
+    SECTION("existing file yields NeedsConfiguration") {
+        fatest::TempDir tmp("init");
+        const auto file = tmp.path() / "fa-bridge-test-file";
+        std::ofstream(file).put('x');
+        setEnv("FA_INSTALL_DIR", file.string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
+    }
 
-    // init(): existing *file* → NeedsConfiguration (is_directory, not exists)
-    const auto file = std::filesystem::temp_directory_path() / "fa-bridge-test-file";
-    std::ofstream(file).put('x');
-    setEnv("FA_INSTALL_DIR", file.string().c_str());
-    assert(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
-    std::filesystem::remove(file);
+    SECTION("directory without lib archives yields NeedsConfiguration") {
+        fatest::TempDir tmp("init");
+        std::ofstream(tmp.path() / "README.TXT") << "empty install";
+        setEnv("FA_INSTALL_DIR", tmp.path().string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
+    }
 
-    // init(): existing directory → Ready, and idempotent
-    const auto dir = std::filesystem::temp_directory_path() / "fa-bridge-test-dir";
-    std::filesystem::create_directories(dir);
-    setEnv("FA_INSTALL_DIR", dir.string().c_str());
-    assert(pack.init() == fl::IContentPack::Status::Ready);
-    assert(pack.init() == fl::IContentPack::Status::Ready);
-    std::filesystem::remove_all(dir);
+    SECTION("directory with an unparseable lib archive yields NeedsConfiguration") {
+        fatest::TempDir tmp("init");
+        fatest::touchLibFile(tmp.path()); // right name, garbage bytes — must not mount
+        setEnv("FA_INSTALL_DIR", tmp.path().string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
+    }
 
-    unsetEnv("FA_INSTALL_DIR");
-    std::puts("test_fa_content_pack: OK");
-    return 0;
+    SECTION("directory with a valid lib archive yields Ready, idempotently") {
+        fatest::TempDir tmp("init");
+        fatest::writeStockLib(tmp.path());
+        setEnv("FA_INSTALL_DIR", tmp.path().string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::Ready);
+        CHECK(pack.init() == fl::IContentPack::Status::Ready);
+    }
 }

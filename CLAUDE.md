@@ -34,10 +34,14 @@ issues + native sub-issues = work breakdown. What can be bridged today lives in
 ## Environments
 
 - **Primary development: Fedora Linux.** `cmake --preset debug && cmake --build --preset debug`.
-- **fx_lib does not compile on Linux/macOS yet** (fighters-codex Phase 1); the
-  `FA_WITH_FX_LIB` CMake option defaults OFF until it does.
+- **fx_lib is linked unconditionally** (no build option): the codex root embeds as a
+  subproject building only `fx::lib` + `fx::render`. Upstream supports Linux + Windows;
+  our macOS CI leg is the proving ground for codex#155.
 - The licensed FA install lives on the fighters-codex **Windows bench**; runtime testing
-  here uses `FA_INSTALL_DIR` (required at runtime only, never at build time).
+  here uses `FA_INSTALL_DIR` (required at runtime only, never at build time). Test/dev
+  env knobs: `FA_BRIDGE_CONFIG_DIR`, `FA_BRIDGE_CACHE_DIR`, `FA_BRIDGE_NO_PROBE`
+  (docs/development.md — tests set them for hermeticity; never rely on a machine's real
+  persisted config in tests).
 - **Never commit FA game assets.** The `.gitignore` blocks the real FA extension set
   (`*.LIB`, `*.PIC`, `*.PAL`, `*.SH`, `*.PT`, `*.OT`, `*.M`, `*.MM`, `*.T2`, `*.CB8`, …);
   FA files with generic extensions (`.TXT`, `.BIN`, `.DAT`, `.CFG`) can't be

@@ -9,9 +9,20 @@ configure_file(src/FaBridgeVersion.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/Fa
 
 # Static core keeps the pack unit-testable without loading the shared library;
 # the Phase 2/3 discovery and transcode code lands here too.
-add_library(fa-bridge-core STATIC src/FaContentPack.cpp)
+add_library(fa-bridge-core STATIC
+    src/BridgeConfig.cpp
+    src/FaAssetTypes.cpp
+    src/FaContentPack.cpp
+    src/FaInstallLocator.cpp
+    src/FaVfs.cpp
+    src/LibArchive.cpp
+    src/MappedFile.cpp
+    src/PlatformPaths.cpp
+    src/TranslationCache.cpp)
 target_include_directories(fa-bridge-core PUBLIC src ${CMAKE_CURRENT_BINARY_DIR}/generated)
-target_link_libraries(fa-bridge-core PUBLIC fl-headers)
+# fx::lib is PUBLIC: the mount layer's headers expose fx::Entry, and the test
+# suite builds synthetic archives with fx::ealib_build.
+target_link_libraries(fa-bridge-core PUBLIC fl-headers fx::lib)
 # Hidden visibility here too: the core's objects are linked into the plugin,
 # and only the factory (marked FA_BRIDGE_EXPORT) may be visible outside it.
 set_target_properties(fa-bridge-core PROPERTIES

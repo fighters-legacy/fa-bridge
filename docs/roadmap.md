@@ -51,25 +51,27 @@ The license decision (#37) is owner-external — must resolve before P4's public
 |---|---|---|---|---|---|
 | **0 — Program Reset** | [Phase 0](https://github.com/fighters-legacy/fa-bridge/milestone/2) | [#30](https://github.com/fighters-legacy/fa-bridge/issues/30) | Roadmap + asset matrix live, claims true, submodule pinned, tooling portable, v0.1.0 | README contradicts nothing | — |
 | **1 — Plugin Skeleton** | [Phase 1](https://github.com/fighters-legacy/fa-bridge/milestone/3) | [#31](https://github.com/fighters-legacy/fa-bridge/issues/31) | Compiling `libfa-bridge.so`/`.dll`/`.dylib`: stub `IContentPack`, `fighters_legacy_create_pack()`, `manifest.toml`, smoke tests, real CI | Engine `ModLoader` loads the stub on Fedora | Engine-header pin only — **unblocked now** |
-| **2 — fx_lib Integration** | [Phase 2](https://github.com/fighters-legacy/fa-bridge/milestone/4) | [#32](https://github.com/fighters-legacy/fa-bridge/issues/32) | `FA_WITH_FX_LIB=ON` default; FA-install discovery (case-insensitive lookup, `init()`/`configure()` flow); LIB mounting; translation cache | fx_lib-linked build green on all 3 OSes | fighters-codex Phase 1 ([codex#42](https://github.com/jomkz/fighters-codex/issues/42)); macOS gap ([codex#155](https://github.com/jomkz/fighters-codex/issues/155)) |
+| **2 — fx_lib Integration** | [Phase 2](https://github.com/fighters-legacy/fa-bridge/milestone/4) | [#32](https://github.com/fighters-legacy/fa-bridge/issues/32) | fx_lib linked unconditionally (former `FA_WITH_FX_LIB` option retired); FA-install discovery (case-insensitive lookup, `init()`/`configure()` flow); LIB mounting; translation cache | fx_lib-linked build green on all 3 OSes | fighters-codex Phase 1 ([codex#42](https://github.com/jomkz/fighters-codex/issues/42)) — **landed**; macOS gap ([codex#155](https://github.com/jomkz/fighters-codex/issues/155)) proven by this repo's CI |
 | **3 — Ready-Now Bridging** | [Phase 3](https://github.com/fighters-legacy/fa-bridge/milestone/5) | [#33](https://github.com/fighters-legacy/fa-bridge/issues/33) | The six Ready pipelines: PIC/PAL/RAW→PNG, PCM→OGG, SH→glb, PT→FlightModel TOML, OT-family→EntityDef TOML, LIB mount; per-aircraft roster ([#39](https://github.com/fighters-legacy/fa-bridge/issues/39)) | Each transcoder validator-conformant with fixture tests | fighters-codex Phase 1 |
 | **4 — In-Engine Validation** | [Phase 4](https://github.com/fighters-legacy/fa-bridge/milestone/6) | [#34](https://github.com/fighters-legacy/fa-bridge/issues/34) | FA aircraft visible + audible in fighters-legacy; priority vs fl-base-pack; `configure()` first-run UI; first usable release | Owner flies an FA aircraft on Fedora | Engine glTF materials for *textured* acceptance ([engine#658](https://github.com/fighters-legacy/fighters-legacy/issues/658)); license decision ([#37](https://github.com/fighters-legacy/fa-bridge/issues/37)) |
 | **5 — Missions & Terrain** | [Phase 5](https://github.com/fighters-legacy/fa-bridge/milestone/7) | [#35](https://github.com/fighters-legacy/fa-bridge/issues/35) | FA mission→YAML; terrain chunks via `resolveTerrainChunk` | Stock FA mission playable | Mission object-list ([codex#156](https://github.com/jomkz/fighters-codex/issues/156)); engine mission runtime ([engine#632](https://github.com/fighters-legacy/fighters-legacy/issues/632)); T2 heightmaps ([codex#158](https://github.com/jomkz/fighters-codex/issues/158)) |
-| **6 — Full Coverage & 1.0** | [Phase 6](https://github.com/fighters-legacy/fa-bridge/milestone/8) | [#36](https://github.com/fighters-legacy/fa-bridge/issues/36) | Music, video/cutscenes, campaign, the 65 machine-code SHs, UI formats — bridged or rationale'd | The 1.0 definition; v1.0.0 tagged | fighters-codex Phase 4/5 ([codex#52](https://github.com/jomkz/fighters-codex/issues/52), [codex#53](https://github.com/jomkz/fighters-codex/issues/53), [codex#55](https://github.com/jomkz/fighters-codex/issues/55), [codex#157](https://github.com/jomkz/fighters-codex/issues/157)) |
+| **6 — Full Coverage & 1.0** | [Phase 6](https://github.com/fighters-legacy/fa-bridge/milestone/8) | [#36](https://github.com/fighters-legacy/fa-bridge/issues/36) | Music, video/cutscenes, campaign, the 65 machine-code SHs, UI formats — bridged or rationale'd | The 1.0 definition; v1.0.0 tagged | fighters-codex Phase 4/5 ([codex#52](https://github.com/jomkz/fighters-codex/issues/52), [codex#53](https://github.com/jomkz/fighters-codex/issues/53), [codex#55](https://github.com/jomkz/fighters-codex/issues/55) — music lib-ification landed in v0.8.x) |
 
 ## What is unblocked today
 
-- All of **Phase 1** — the skeleton compiles against vendored engine headers, no fx_lib.
-- The fx_lib-free slices of **Phase 3**: transcoder design docs, the PT→FlightModel-TOML
-  field-mapping document (against the engine's `docs/modding/flight-model.md`), synthetic
-  test fixtures, and vendoring the write-side libraries below.
+- **Phases 1 and 2 are delivered** — the plugin skeleton (v0.2.x) and the fx_lib
+  integration: unconditional linkage, install discovery + first-run `configure()`,
+  the LIB mount answering `hasAsset`/`listAssets`, and the translation cache.
+- **All of Phase 3** — every *Ready* matrix row can grow its transcoder now: fx_lib
+  links on every platform, the mount and cache are in place, and the write-side
+  library decisions (below) are the remaining choices.
 
 ## Platform notes
 
 - **macOS gap upstream:** fighters-codex Phase 1's exit gate covers Linux (GCC/Clang) and
   Windows (MSVC) only; this repo's rule is all three platforms including AppleClang.
   Tracked upstream as [codex#155](https://github.com/jomkz/fighters-codex/issues/155),
-  with this repo's 3-OS CI as the proving ground once `FA_WITH_FX_LIB` flips ON.
+  with this repo's 3-OS CI as the proving ground now that fx_lib is linked unconditionally.
 - **Plugin ABI discipline:** `std::optional`/`std::string`/`std::vector` cross the plugin
   boundary, so the plugin must be built with the same toolchain family and CRT
   configuration as the engine (MSVC: matching `/MD` and iterator-debug-level; Linux:

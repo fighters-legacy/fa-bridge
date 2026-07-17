@@ -64,15 +64,18 @@ The build produces the plugin shared library (`libfa-bridge.so` / `fa-bridge.dll
 `libfa-bridge.dylib`) and stages a drop-in mod directory at
 `build/<preset>/stage/mods/fa-bridge/` containing the plugin and its `manifest.toml`.
 
-### `FA_WITH_FX_LIB`
+### fx_lib
 
-fx_lib does not compile on Linux/macOS until fighters-codex Phase 1 lands, so the
-`FA_WITH_FX_LIB` option defaults **OFF**. To build against fx_lib (e.g. on Windows, or
-once the codex port lands):
+fx_lib is always built and linked from the `extern/fx_lib` submodule — the former
+`FA_WITH_FX_LIB` option is gone (fighters-codex ships fx_lib cross-platform since its
+Phase 1). Configuration fails with a clear message if the submodule is missing; fix with:
 
 ```bash
-cmake --preset debug -DFA_WITH_FX_LIB=ON
+git submodule update --init --recursive
 ```
+
+The codex root is embedded as a subproject: only its `lib/` (`fx::lib`, the parsers) and
+`render/` (`fx::render`, unused here) build; the codex CLI, GUI, tools, and tests do not.
 
 ### `FA_BUILD_TESTS`
 
@@ -84,6 +87,42 @@ The test suite builds by default. Set `-DFA_BUILD_TESTS=OFF` to build only the p
 ```bash
 ctest --preset debug --output-on-failure
 ```
+
+Unit tests use **Catch2 v3** (v3.7.1, the same framework and version as fighters-codex),
+fetched with CMake `FetchContent` — the first configure of each build directory needs
+network access. Each `TEST_CASE` registers as its own `ctest` entry. `test_plugin_load`
+is deliberately a plain executable, not a Catch2 target: it rehearses the engine's
+`dlopen`/`LoadLibrary` ModLoader flow in a process of its own.
+
+---
+
+## Install discovery and configuration
+
+At `init()` the plugin locates the FA install through a chain — first valid
+candidate wins, and a candidate must contain at least one `.LIB` file (matched
+case-insensitively):
+
+1. `FA_INSTALL_DIR` environment variable (explicit override)
+2. the persisted config file — `fighters-legacy/fa-bridge/config.toml` under the
+   platform config dir (`$XDG_CONFIG_HOME` or `~/.config` on Linux, `%APPDATA%`
+   on Windows, `~/Library/Application Support` on macOS)
+3. Windows only: a best-effort registry probe, then
+   `<drive>:\JANES\Fighters Anthology` on each fixed drive
+
+When nothing is found, the game client shows a native folder picker on first
+run and persists the confirmed path; deleting the config file re-triggers the
+flow. Dev/test environment knobs (each overrides the default behaviour):
+
+| Variable | Effect |
+|---|---|
+| `FA_BRIDGE_CONFIG_DIR` | overrides the config directory |
+| `FA_BRIDGE_CACHE_DIR` | overrides the cache directory |
+| `FA_BRIDGE_NO_PROBE` | skips the registry/drive probes |
+
+The translation cache lives under the cache directory
+(`fighters-legacy/fa-bridge/` beneath `$XDG_CACHE_HOME`/`~/.cache`,
+`%LOCALAPPDATA%`, or `~/Library/Caches`). It is self-invalidating against the
+source archives; delete the directory at any time to clear it.
 
 ---
 
@@ -114,12 +153,14 @@ engine scans (`fl-server`: the working directory; the game: next to the binary):
 
 ```bash
 cp -r build/debug/stage/mods/fa-bridge /path/to/engine/mods/
-FA_INSTALL_DIR=/path/to/anything ./fl-server
+FA_INSTALL_DIR="/path/to/Janes Fighters Anthology" ./fl-server
 ```
 
-Set `FA_INSTALL_DIR` to an existing directory so the stub reports `Ready` —
-otherwise the engine's `AssetManager` drops the pack after loading it
-(`NeedsConfiguration` with no configure UI), which is correct but noisy.
+Point `FA_INSTALL_DIR` at a real FA install (it must contain at least one
+parseable `.LIB`) so the pack mounts and reports `Ready`. Headless hosts pass
+no window, so a pack that cannot discover an install is dropped after loading
+(`NeedsConfiguration` with no configure UI) — correct but noisy. In the game
+client the same situation opens the first-run folder picker instead.
 
 **Windows:** the plugin and the engine must be built in the **same configuration**
 (Debug with Debug, Release with Release) — mixed CRT/iterator-debug-level builds fail
@@ -152,9 +193,10 @@ The coverage workflow runs on every push and pull request. Locally:
 cmake --preset coverage
 cmake --build --preset coverage
 ctest --preset coverage --output-on-failure
-lcov --capture --directory . --output-file coverage.info
+lcov --capture --directory . --output-file coverage.info \
+     --exclude '*/_deps/*' --exclude '*/catch2/*'
 lcov --remove coverage.info '/usr/*' '*/tests/*' '*/vendor/*' '*/extern/*' \
-     --output-file coverage.info
+     '*/_deps/*' '*/catch2/*' --output-file coverage.info
 ```
 
 ---
