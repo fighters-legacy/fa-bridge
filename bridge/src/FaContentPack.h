@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
+#include "FaVfs.h"
 #include "content/IContentPack.h"
 
 #include <filesystem>
 
 namespace fa {
 
-// Stub IContentPack (roadmap Phase 1): identifies the pack to the engine and
-// reports readiness from FA_INSTALL_DIR, but serves no assets yet. The
-// fx_lib-backed transcode pipelines land per roadmap Phases 2-3.
+// The FA bridge pack (roadmap Phase 2): discovers and mounts the user's FA
+// install and answers hasAsset/listAssets from the mounted archives. The
+// load*() transcode pipelines land in roadmap Phase 3 — until then every
+// loader returns nullopt and the engine falls through to lower-priority packs.
 class FaContentPack : public fl::IContentPack {
   public:
     // Above fl-base-pack (50) so bridged FA content overrides the engine's
@@ -52,6 +54,7 @@ class FaContentPack : public fl::IContentPack {
 
   private:
     std::filesystem::path m_installDir;
+    FaVfs m_vfs;
 };
 
 } // namespace fa

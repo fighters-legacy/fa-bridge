@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "FaContentPack.h"
+#include "SyntheticLib.h"
 #include "TempDir.h"
 #include "TestEnv.h"
 
@@ -90,9 +91,16 @@ TEST_CASE("init requires FA_INSTALL_DIR pointing at an FA install") {
         CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
     }
 
-    SECTION("directory with a lib archive yields Ready, idempotently") {
+    SECTION("directory with an unparseable lib archive yields NeedsConfiguration") {
         fatest::TempDir tmp("init");
-        fatest::touchLibFile(tmp.path());
+        fatest::touchLibFile(tmp.path()); // right name, garbage bytes — must not mount
+        setEnv("FA_INSTALL_DIR", tmp.path().string().c_str());
+        CHECK(pack.init() == fl::IContentPack::Status::NeedsConfiguration);
+    }
+
+    SECTION("directory with a valid lib archive yields Ready, idempotently") {
+        fatest::TempDir tmp("init");
+        fatest::writeStockLib(tmp.path());
         setEnv("FA_INSTALL_DIR", tmp.path().string().c_str());
         CHECK(pack.init() == fl::IContentPack::Status::Ready);
         CHECK(pack.init() == fl::IContentPack::Status::Ready);

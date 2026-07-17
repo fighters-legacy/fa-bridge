@@ -110,6 +110,20 @@ a release tag. Provides the FA format parsers; the bridge never duplicates parse
 What each parser can deliver today is tracked in
 [asset-support-matrix.md](asset-support-matrix.md).
 
+### Install mount — `FaVfs` (exists)
+
+`bridge/src/FaVfs.{h,cpp}` mounts every `.LIB` in the confirmed install as one
+flat, case-insensitive name index — the same shape FA builds at startup
+(`LibStartUp`'s hint index, fighters-codex `docs/fa/memory-resource.md`).
+Archives are memory-mapped (`MappedFile`), directories parsed by
+`fx::ealib_read_dir` (`LibArchive` validates magic and entry count itself —
+LIBs are untrusted input), and duplicate names resolve to the last
+registration in deterministic case-folded filename order. `hasAsset` and
+`listAssets` answer truthfully from the mount via the per-type extension
+table (`FaAssetTypes`, mirrored in the asset support matrix); the `load*()`
+transcoders are Phase 3, so the engine currently falls through to
+lower-priority packs for actual bytes.
+
 ### `extern/fl-headers` (exists)
 
 Verbatim copies of the engine's interface headers — the content-pack set

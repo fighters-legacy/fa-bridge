@@ -20,9 +20,14 @@ add_executable(fa_bridge_tests
     test_bridge_config.cpp
     test_configure_flow.cpp
     test_fa_content_pack.cpp
+    test_fa_vfs.cpp
     test_fx_lib_link.cpp
     test_install_locator.cpp
-    test_platform_paths.cpp)
+    test_lib_archive.cpp
+    test_mapped_file.cpp
+    test_pack_assets.cpp
+    test_platform_paths.cpp
+    test_real_install.cpp)
 target_link_libraries(fa_bridge_tests PRIVATE fa-bridge-core Catch2::Catch2WithMain)
 catch_discover_tests(fa_bridge_tests)
 

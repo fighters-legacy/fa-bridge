@@ -5,6 +5,7 @@
 
 #include "FaContentPack.h"
 #include "FakeWindow.h"
+#include "SyntheticLib.h"
 #include "TempDir.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -12,7 +13,7 @@
 using fatest::FakeWindow;
 using fatest::HermeticEnv;
 using fatest::TempDir;
-using fatest::touchLibFile;
+using fatest::writeStockLib;
 
 TEST_CASE("configure returns false with a null window") {
     HermeticEnv env;
@@ -35,7 +36,7 @@ TEST_CASE("configure dialog cancel returns false and persists nothing") {
 TEST_CASE("configure valid selection persists config and init becomes Ready") {
     HermeticEnv env;
     TempDir install("install");
-    touchLibFile(install.path());
+    writeStockLib(install.path());
 
     {
         fa::FaContentPack pack;
@@ -56,7 +57,7 @@ TEST_CASE("configure invalid selection warns then retry succeeds") {
     HermeticEnv env;
     TempDir install("install");
     TempDir empty("empty");
-    touchLibFile(install.path());
+    writeStockLib(install.path());
 
     fa::FaContentPack pack;
     FakeWindow window;

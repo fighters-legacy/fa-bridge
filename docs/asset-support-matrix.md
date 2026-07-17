@@ -49,12 +49,14 @@ FA install — an early Phase 3 deliverable.
 
 | FA format | fx_lib API | fx_lib status (v0.3.0) | Engine asset type | Canonical format | Bridge transcode | Verdict | Blocked by |
 |---|---|---|---|---|---|---|---|
-| `.LIB` archives | `fx/ealib.h` | Ready — extract/build/patch, round-trip tested | (container) | — | FA-install mount/extract layer | **Ready** | — |
+| `.LIB` archives | `fx/ealib.h` | Ready — extract/build/patch, round-trip tested | (container) | — | **Done** — mounted read-only in-plugin VFS: case-insensitive, memory-mapped, all install libs, `hasAsset`/`listAssets` answer from it | **Ready** | — |
 | `.PIC` + `.PAL` images | `fx/pic.h`, `fx/pal.h` | Ready — all 3 sub-formats → RGBA8, tested | Texture | PNG (KTX2 later) | RGBA8 → PNG encode | **Ready** | — |
 | `.RAW` screenshots | `fx/raw.h` | Ready — RGBA8 via embedded palette | Texture | PNG | RGBA8 → PNG encode | **Ready** | — |
 | `.SH` 3D models | `fx/sh.h` | 94.9% of 1,275 files → vertices/faces/textures; 65 files are x86 machine-code geometry (incl. some flyables, e.g. `A10.SH`) | Mesh | glTF `.glb` | ShMesh → glb writer; feet → metres; materials limited by engine stub | **Ready** (94.9%) | Remainder: fighters-codex Phase 5 ([#52](https://github.com/jomkz/fighters-codex/issues/52)/[#53](https://github.com/jomkz/fighters-codex/issues/53)) |
 | `.PT` flight models | `fx/ot.h`, `fx/brf.h` | Ready — named fields, round-trip proven | FlightModel | TOML | Field mapping + TOML emit | **Ready** | — |
-| `.OT`/`.NT`/`.JT`/`.SEE`/`.ECM`/`.GAS` type records | `fx/ot.h`, `fx/brf.h` | Ready — named fields, round-trip proven | EntityDef | TOML | Field mapping + TOML emit | **Ready** | — |
+| `.OT`/`.NT`/`.GAS` type records | `fx/ot.h`, `fx/brf.h` | Ready — named fields, round-trip proven | EntityDef | TOML | Field mapping + TOML emit | **Ready** | — |
+| `.JT` weapon (ordnance) records | `fx/ot.h`, `fx/brf.h` | Ready — named fields, round-trip proven | Weapon | TOML | Field mapping + TOML emit | **Ready** | — |
+| `.SEE`/`.ECM` sensor & countermeasure records | `fx/ot.h`, `fx/brf.h` | Ready — named fields, round-trip proven | SensorDef | TOML | Field mapping + TOML emit | **Ready** | — |
 | `.11K`/`.8K`/`.5K`/`.22K` PCM audio | `fx/audio.h` | Ready — WAV/PCM, round-trip tested | Audio | OGG Vorbis | PCM → Vorbis encode | **Ready** | — |
 | `.M`/`.MM` missions & maps | `fx/mission.h` | Partial — summary info + byte-identical round-trip of all 592 stock missions; **no per-object list** | Mission | YAML | Listing/metadata now; full conversion blocked | **Partial** | Object-list extraction ([codex#156](https://github.com/jomkz/fighters-codex/issues/156)); engine mission runtime ([engine#632](https://github.com/fighters-legacy/fighters-legacy/issues/632)) |
 | `.T2` terrain | `fx/t2.h` | Grid metadata only — no heightmaps or tile geometry | Terrain | Heightmap PNG chunks | Blocked | **Blocked (fighters-codex)** | Heightmap read API ([codex#158](https://github.com/jomkz/fighters-codex/issues/158)) |
@@ -86,9 +88,24 @@ FA install — an early Phase 3 deliverable.
   ([codex#159](https://github.com/jomkz/fighters-codex/issues/159)).
 - **Audio sample rates:** extension encodes the rate; `.22K` → 22050 Hz was
   fixed upstream in fighters-codex #100 (included in v0.3.0).
-- **Case sensitivity:** FA installs vary in filename case; the Phase 2
-  install-discovery layer must match case-insensitively on case-sensitive
-  filesystems.
+- **Case sensitivity — implemented:** FA installs vary in filename case; the
+  Phase 2 discovery/mount layer matches all FA file names case-insensitively
+  by enumeration (ASCII fold; never a literal-path lookup).
+- **Type mapping:** the engine's v0.3.x asset-type split re-homes the
+  OT-family: `.JT` → Weapon, `.SEE`/`.ECM` → SensorDef, `.OT`/`.NT`/`.GAS` →
+  EntityDef. The in-code table (`bridge/src/FaAssetTypes.cpp`) mirrors these
+  rows and a table-lock test fails if the two drift. Terrain, AIScript,
+  Manual, and Livery deliberately map to no FA extension (no heightmap read
+  path yet; engine AI is authored Lua; Manual/Livery are authored content).
+- **Cross-LIB precedence:** the mount builds one flat name index like FA's own
+  `LibStartUp` hint index (fighters-codex `docs/fa/memory-resource.md`) —
+  duplicate names resolve to the last registration. FA registers in OS
+  enumeration order; the bridge mounts in case-folded filename order so the
+  result is deterministic. FA's loose-file fallback layer is not mounted.
+- **Disk-resident libs:** several stock archives ship on the CDs, not the
+  install dir (`FA_3`, `FA_7`, `FA_10*`, `FA_11*` — see LIB.md); the mount
+  serves whatever is present, so content coverage tracks how full the user's
+  install is.
 
 ## Maintenance
 
